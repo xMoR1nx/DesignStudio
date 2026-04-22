@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DesignStudio Manager</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #0a0a0c; --deep: #111116; --surface: #16161e; --card: #1c1c26;
+  --border: rgba(255,255,255,0.07); --border-bright: rgba(255,255,255,0.14);
+  --gold: #c9a84c; --gold-light: #e8c97a; --gold-dim: rgba(201,168,76,0.15);
+  --gold-glow: rgba(201,168,76,0.08); --text: #e8e4dc;
+  --text-muted: rgba(232,228,220,0.5); --text-dim: rgba(232,228,220,0.28);
+  --accent: #7b6cff; --accent2: #ff6b6b; --green: #4ecb8e;
+  --radius: 12px; --radius-lg: 20px;
+  --font-display: 'Cormorant Garamond', serif; --font-body: 'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--void); color: var(--text); min-height: 100vh; overflow-x: hidden; font-size: 15px; line-height: 1.6; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:1000; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); opacity: 0.4; }
+.page { display: none; }
+.page.active { display: block; animation: fadeUp .4s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+header { position: sticky; top: 0; z-index: 500; background: rgba(10,10,12,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 2.5rem; height: 66px; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: .6rem; cursor: pointer; text-decoration: none; }
+.logo-mark { width: 34px; height: 34px; background: var(--gold); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display: flex; align-items: center; justify-content: center; font-size: .7rem; color: var(--void); font-weight: 700; }
+.logo-text { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: var(--text); letter-spacing: .04em; }
+.logo-text span { color: var(--gold); }
+nav { display: flex; align-items: center; gap: .15rem; }
+nav button { background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: .78rem; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); padding: .5rem 1rem; border-radius: 8px; transition: color .2s, background .2s; }
+nav button:hover { color: var(--text); background: rgba(255,255,255,.05); }
+nav button.active { color: var(--gold); background: var(--gold-glow); }
+.header-actions { display:flex; gap:.75rem; align-items:center; }
+.btn-login { background: none; border: 1px solid var(--border-bright); cursor: pointer; font-family: var(--font-body); font-size: .78rem; font-weight: 500; color: var(--text-muted); padding: .45rem 1.1rem; border-radius: 8px; transition: all .2s; letter-spacing: .05em; text-transform: uppercase; }
+.btn-login:hover { border-color: var(--gold); color: var(--gold); }
+.btn-cta { background: var(--gold); border: none; cursor: pointer; font-family: var(--font-body); font-size: .78rem; font-weight: 600; color: var(--void); padding: .48rem 1.25rem; border-radius: 8px; transition: all .2s; letter-spacing: .05em; text-transform: uppercase; }
+.btn-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+.hero { min-height: calc(100vh - 66px); display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; padding: 5rem 2.5rem; max-width: 1280px; margin: 0 auto; position: relative; }
+.hero::before { content: ''; position: absolute; right: -200px; top: 50%; transform: translateY(-50%); width: 700px; height: 700px; background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%); pointer-events: none; }
+.hero-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.25); color: var(--gold-light); font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: .35rem .85rem; border-radius: 100px; margin-bottom: 1.5rem; }
+.hero-badge::before { content: '✦'; font-size: .6rem; }
+.hero-title { font-family: var(--font-display); font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 300; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -.01em; }
+.hero-title em { font-style: italic; color: var(--gold); }
+.hero-title strong { font-weight: 700; display: block; }
+.hero-desc { color: var(--text-muted); font-size: 1rem; max-width: 480px; margin-bottom: 2.5rem; line-height: 1.75; }
+.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-primary { background: var(--gold); color: var(--void); border: none; cursor: pointer; font-family: var(--font-body); font-weight: 600; font-size: .88rem; padding: .85rem 2rem; border-radius: 10px; transition: all .25s; letter-spacing: .04em; }
+.btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,168,76,.25); }
+.btn-outline { background: none; color: var(--text); border: 1px solid var(--border-bright); cursor: pointer; font-family: var(--font-body); font-weight: 500; font-size: .88rem; padding: .85rem 2rem; border-radius: 10px; transition: all .25s; letter-spacing: .04em; }
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+.hero-stats { display: flex; gap: 2.5rem; margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
+.stat-num { font-family: var(--font-display); font-size: 2.2rem; font-weight: 600; color: var(--gold); line-height: 1; }
+.stat-label { font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-top: .3rem; }
+.hero-visual { position: relative; display: flex; justify-content: center; align-items: center; }
+.dashboard-preview { width: 100%; max-width: 540px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+.dp-header { background: var(--surface); padding: .85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.dp-dots { display:flex; gap:.4rem; }
+.dp-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.dp-dots span:nth-child(1) { background: #ff5f57; }
+.dp-dots span:nth-child(2) { background: #febc2e; }
+.dp-dots span:nth-child(3) { background: #28c840; }
+.dp-title { font-size:.72rem; color: var(--text-dim); letter-spacing:.06em; text-transform:uppercase; }
+.dp-body { padding: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.dp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+.dp-card-label { font-size: .65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .5rem; }
+.dp-card-val { font-family: var(--font-display); font-size: 1.8rem; font-weight: 600; line-height: 1; }
+.dp-card-val.gold { color: var(--gold); } .dp-card-val.green { color: var(--green); } .dp-card-val.accent { color: var(--accent); }
+.dp-card-sub { font-size: .7rem; color: var(--text-dim); margin-top: .3rem; }
+.dp-projects { padding: 0 1.25rem 1.25rem; }
+.dp-proj-title { font-size: .65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem; }
+.dp-proj-item { display: flex; align-items: center; gap: .75rem; padding: .6rem 0; border-bottom: 1px solid var(--border); }
+.dp-proj-item:last-child { border-bottom: none; }
+.dp-proj-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dp-proj-name { font-size: .8rem; flex: 1; }
+.dp-proj-status { font-size: .65rem; padding: .2rem .55rem; border-radius: 100px; font-weight: 500; }
+.status-active { background: rgba(78,203,142,.12); color: var(--green); }
+.status-progress { background: rgba(123,108,255,.12); color: var(--accent); }
+.status-new { background: rgba(201,168,76,.12); color: var(--gold); }
+.section { padding: 6rem 2.5rem; max-width: 1280px; margin: 0 auto; }
+.section-eyebrow { display: flex; align-items: center; gap: .6rem; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+.section-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--gold); }
+.section-title { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 300; line-height: 1.15; margin-bottom: 1rem; }
+.section-title em { font-style: italic; color: var(--gold); }
+.section-sub { color: var(--text-muted); max-width: 540px; }
+.services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 3.5rem; }
+.service-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; transition: border-color .25s, transform .25s; }
+.service-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+.service-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--gold-dim); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1.5rem; }
+.service-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; margin-bottom: .75rem; }
+.service-desc { color: var(--text-muted); font-size: .88rem; line-height: 1.65; }
+.service-price { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: .78rem; color: var(--text-dim); }
+.service-price strong { color: var(--gold); font-size: 1rem; }
+.portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 3.5rem; }
+.portfolio-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: transform .3s, border-color .3s; cursor: pointer; }
+.portfolio-card:hover { transform: translateY(-6px); border-color: var(--border-bright); }
+.portfolio-img { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; }
+.portfolio-body { padding: 1.25rem; }
+.portfolio-tag { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--gold); margin-bottom: .5rem; }
+.portfolio-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; margin-bottom: .5rem; }
+.portfolio-client { font-size: .78rem; color: var(--text-muted); }
+.team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-top: 3.5rem; }
+.team-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem 1.25rem; text-align: center; transition: border-color .25s; }
+.team-card:hover { border-color: var(--gold); }
+.team-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--gold-dim); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem; border: 2px solid rgba(201,168,76,.2); }
+.team-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; margin-bottom: .25rem; }
+.team-role { font-size: .75rem; color: var(--gold); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .75rem; }
+.team-bio { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+.dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 66px); }
+.sidebar { background: var(--deep); border-right: 1px solid var(--border); padding: 1.5rem 1rem; position: sticky; top: 66px; height: calc(100vh - 66px); overflow-y: auto; }
+.sidebar-section { margin-bottom: 2rem; }
+.sidebar-label { font-size: .6rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); padding: 0 .75rem; margin-bottom: .6rem; }
+.sidebar-item { display: flex; align-items: center; gap: .65rem; padding: .6rem .75rem; border-radius: 8px; cursor: pointer; font-size: .85rem; color: var(--text-muted); transition: all .2s; border: none; background: none; width: 100%; text-align: left; font-family: var(--font-body); }
+.sidebar-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+.sidebar-item.active { background: var(--gold-glow); color: var(--gold); }
+.sidebar-item .icon { font-size: 1rem; width: 20px; flex-shrink: 0; }
+.sidebar-badge { margin-left: auto; background: var(--accent); color: #fff; font-size: .6rem; font-weight: 700; padding: .1rem .45rem; border-radius: 100px; }
+.sidebar-badge.gold { background: var(--gold); color: var(--void); }
+.dash-content { padding: 2.5rem; background: var(--void); }
+.dash-header { margin-bottom: 2rem; }
+.dash-title { font-family: var(--font-display); font-size: 2rem; font-weight: 300; margin-bottom: .35rem; }
+.dash-title span { color: var(--gold); font-style: italic; }
+.dash-sub { color: var(--text-muted); font-size: .88rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.metric-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; position: relative; overflow: hidden; }
+.metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent-color, var(--gold)); }
+.metric-label { font-size: .7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .6rem; }
+.metric-val { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--text); line-height: 1; }
+.metric-change { display: inline-flex; align-items: center; gap: .25rem; font-size: .72rem; margin-top: .5rem; color: var(--green); }
+.metric-change.down { color: var(--accent2); }
+.metric-icon { position: absolute; right: 1.25rem; top: 1.25rem; font-size: 1.4rem; opacity: .35; }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; overflow: hidden; }
+.panel-head { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; }
+.panel-action { font-size: .75rem; color: var(--gold); cursor: pointer; background: none; border: none; font-family: var(--font-body); letter-spacing: .05em; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(--surface); }
+th { padding: .75rem 1.5rem; text-align: left; font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); }
+td { padding: .9rem 1.5rem; border-top: 1px solid var(--border); font-size: .85rem; }
+tr:hover td { background: rgba(255,255,255,.02); }
+.tag { display: inline-block; padding: .25rem .65rem; border-radius: 100px; font-size: .68rem; font-weight: 600; letter-spacing: .04em; }
+.tag-green { background: rgba(78,203,142,.12); color: var(--green); }
+.tag-purple { background: rgba(123,108,255,.12); color: var(--accent); }
+.tag-gold { background: rgba(201,168,76,.12); color: var(--gold); }
+.tag-red { background: rgba(255,107,107,.12); color: var(--accent2); }
+.tag-gray { background: rgba(255,255,255,.06); color: var(--text-muted); }
+.progress-bar-wrap { background: var(--surface); border-radius: 100px; height: 5px; width: 100px; }
+.progress-bar { height: 5px; border-radius: 100px; background: var(--gold); }
+.tasks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.task-col-header { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); }
+.task-col-dot { width: 8px; height: 8px; border-radius: 50%; }
+.task-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: .75rem; cursor: pointer; transition: border-color .2s, transform .2s; }
+.task-card:hover { border-color: var(--border-bright); transform: translateY(-2px); }
+.task-title { font-size: .88rem; font-weight: 500; margin-bottom: .5rem; }
+.task-meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.task-project { font-size: .7rem; color: var(--gold); }
+.task-deadline { font-size: .7rem; color: var(--text-dim); margin-left: auto; }
+.task-priority { font-size: .62rem; font-weight: 600; padding: .15rem .5rem; border-radius: 100px; text-transform: uppercase; }
+.priority-high { background: rgba(255,107,107,.12); color: var(--accent2); }
+.priority-medium { background: rgba(201,168,76,.12); color: var(--gold); }
+.priority-low { background: rgba(78,203,142,.12); color: var(--green); }
+.chart-wrap { padding: 1.5rem; }
+.chart-bars { display: flex; align-items: flex-end; gap: .6rem; height: 160px; border-bottom: 1px solid var(--border); }
+.chart-bar-group { display: flex; gap: .2rem; align-items: flex-end; flex: 1; }
+.bar { flex: 1; border-radius: 4px 4px 0 0; transition: opacity .2s; cursor: pointer; min-width: 8px; }
+.bar:hover { opacity: .8; }
+.bar.income { background: linear-gradient(to top, var(--gold), var(--gold-light)); }
+.bar.expense { background: linear-gradient(to top, rgba(123,108,255,.5), rgba(123,108,255,.8)); }
+.chart-labels { display: flex; gap: .6rem; margin-top: .75rem; }
+.chart-label { flex: 1; text-align: center; font-size: .65rem; color: var(--text-dim); }
+.chart-legend { display: flex; gap: 1.5rem; margin-top: 1rem; }
+.legend-item { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--text-muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.invoice-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; margin-bottom: .75rem; transition: border-color .2s; }
+.invoice-card:hover { border-color: var(--border-bright); }
+.invoice-num { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: var(--gold); min-width: 120px; }
+.invoice-client { flex: 1; }
+.invoice-client-name { font-size: .88rem; font-weight: 500; }
+.invoice-date { font-size: .75rem; color: var(--text-dim); }
+.invoice-amount { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; min-width: 120px; text-align: right; }
+.notif-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); transition: background .2s; }
+.notif-item:hover { background: rgba(255,255,255,.02); }
+.notif-item.unread { background: rgba(201,168,76,.04); }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-top: .4rem; flex-shrink: 0; }
+.notif-dot.read { background: var(--surface); }
+.notif-text { flex: 1; font-size: .85rem; }
+.notif-time { font-size: .72rem; color: var(--text-dim); margin-top: .2rem; }
+.notif-type { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; margin-bottom: .25rem; color: var(--gold); }
+.contacts-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; padding: 5rem 2.5rem; max-width: 1280px; margin: 0 auto; }
+.contact-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1.25rem 0; border-bottom: 1px solid var(--border); }
+.contact-item:last-child { border-bottom: none; }
+.contact-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--gold-dim); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.contact-type { font-size: .68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .2rem; }
+.contact-val { font-size: .95rem; }
+.contact-val a { color: var(--text); text-decoration: none; }
+.contact-val a:hover { color: var(--gold); }
+.contact-form-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; }
+.form-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; margin-bottom: .5rem; }
+.form-sub { color: var(--text-muted); font-size: .85rem; margin-bottom: 2rem; }
+.form-group { margin-bottom: 1.25rem; }
+.form-label { display: block; font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .5rem; }
+.form-input, .form-select, .form-textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; color: var(--text); font-family: var(--font-body); font-size: .9rem; transition: border-color .2s, box-shadow .2s; outline: none; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,.1); }
+.form-textarea { resize: vertical; min-height: 120px; }
+.form-select option { background: var(--deep); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-submit { width: 100%; background: var(--gold); border: none; cursor: pointer; font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--void); padding: .9rem 2rem; border-radius: 10px; transition: all .25s; margin-top: .5rem; letter-spacing: .04em; }
+.form-submit:hover { background: var(--gold-light); transform: translateY(-1px); }
+.form-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.map-placeholder { height: 280px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; margin-top: 2.5rem; position: relative; overflow: hidden; }
+.map-placeholder::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px); }
+.map-pin { font-size: 2.5rem; }
+.map-address { font-size: .88rem; color: var(--text-muted); text-align: center; }
+.map-badge { background: var(--gold); color: var(--void); font-size: .75rem; font-weight: 600; padding: .35rem .85rem; border-radius: 100px; }
+.portfolio-page { padding: 4rem 2.5rem; max-width: 1280px; margin: 0 auto; }
+.portfolio-filters { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 2.5rem; margin-top: 2.5rem; }
+.filter-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); font-family: var(--font-body); font-size: .78rem; font-weight: 500; padding: .5rem 1.1rem; border-radius: 100px; cursor: pointer; transition: all .2s; }
+.filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+.filter-btn.active { background: var(--gold); border-color: var(--gold); color: var(--void); font-weight: 600; }
+.portfolio-full-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.portfolio-full-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; transition: transform .3s, border-color .3s; }
+.portfolio-full-card:hover { transform: translateY(-6px); border-color: var(--border-bright); }
+.pfc-image { height: 220px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+.pfc-body { padding: 1.5rem; }
+.pfc-category { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--gold); margin-bottom: .5rem; }
+.pfc-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; margin-bottom: .5rem; }
+.pfc-desc { font-size: .82rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1rem; }
+.pfc-tags { display: flex; gap: .4rem; flex-wrap: wrap; }
+.pfc-tag { font-size: .65rem; padding: .2rem .6rem; border-radius: 100px; background: rgba(255,255,255,.06); color: var(--text-muted); }
+.toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; background: var(--card); border: 1px solid var(--border-bright); border-left: 3px solid var(--gold); border-radius: 10px; padding: 1rem 1.5rem; font-size: .85rem; color: var(--text); box-shadow: 0 20px 50px rgba(0,0,0,.5); transform: translateX(calc(100% + 3rem)); transition: transform .35s cubic-bezier(.34,1.56,.64,1); max-width: 320px; }
+.toast.show { transform: translateX(0); }
+.toast-title { font-weight: 600; margin-bottom: .2rem; }
+.toast-msg { color: var(--text-muted); font-size: .8rem; }
+.toast.error { border-left-color: var(--accent2); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); z-index: 800; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; width: 100%; max-width: 400px; position: relative; animation: scaleIn .25s ease; }
+@keyframes scaleIn { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-close { position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: .25rem; }
+.modal-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 600; margin-bottom: .4rem; }
+.modal-sub { color: var(--text-muted); font-size: .85rem; margin-bottom: 2rem; }
+.modal-tabs { display: flex; gap: 0; margin-bottom: 2rem; background: var(--surface); border-radius: 8px; padding: .3rem; }
+.modal-tab { flex: 1; padding: .5rem; border-radius: 6px; cursor: pointer; font-size: .8rem; font-weight: 500; text-align: center; background: none; border: none; color: var(--text-muted); font-family: var(--font-body); transition: all .2s; }
+.modal-tab.active { background: var(--gold); color: var(--void); font-weight: 600; }
+.demo-hint { background: var(--gold-glow); border: 1px solid rgba(201,168,76,.2); border-radius: 8px; padding: .75rem 1rem; margin-top: 1rem; font-size: .78rem; color: var(--text-muted); }
+.demo-hint strong { color: var(--gold); }
+/* Loader */
+.loader { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.2); border-top-color: var(--gold); border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: .4rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-row td { color: var(--text-dim); font-style: italic; text-align: center; padding: 2rem; }
+footer { background: var(--deep); border-top: 1px solid var(--border); padding: 3rem 2.5rem 2rem; }
+.footer-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 2.5rem; }
+.footer-logo-text { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: .75rem; }
+.footer-logo-text span { color: var(--gold); }
+.footer-tagline { color: var(--text-muted); font-size: .85rem; max-width: 280px; line-height: 1.7; }
+.footer-col-title { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 1rem; }
+.footer-link { display: block; color: var(--text-muted); text-decoration: none; font-size: .85rem; margin-bottom: .5rem; transition: color .2s; }
+.footer-link:hover { color: var(--gold); }
+.footer-bottom { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: .78rem; color: var(--text-dim); }
+.dash-subpage { display: none; }
+.dash-subpage.active { display: block; animation: fadeUp .3s ease; }
+/* API status badge */
+.api-status { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; color: var(--text-dim); }
+.api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+.api-dot.offline { background: var(--accent2); animation: none; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+@media (max-width: 1024px) { .services-grid,.portfolio-grid,.portfolio-full-grid{grid-template-columns:repeat(2,1fr)} .team-grid{grid-template-columns:repeat(2,1fr)} .metrics-grid{grid-template-columns:repeat(2,1fr)} .hero{grid-template-columns:1fr} .hero-visual{display:none} .dashboard-layout{grid-template-columns:1fr} .sidebar{display:none} }
+@media (max-width: 640px) { .services-grid,.portfolio-grid,.portfolio-full-grid,.team-grid{grid-template-columns:1fr} .contacts-layout{grid-template-columns:1fr} .footer-inner{grid-template-columns:1fr 1fr} nav{display:none} .hero-stats{flex-wrap:wrap;gap:1.5rem} .form-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="showPage('home')">
+    <div class="logo-mark">DS</div>
+    <span class="logo-text">Design<span>Studio</span></span>
+  </div>
+  <nav>
+    <button class="active" onclick="showPage('home', this)">Головна</button>
+    <button onclick="showPage('portfolio-page', this)">Портфоліо</button>
+    <button onclick="showPage('services-page', this)">Послуги</button>
+    <button onclick="showPage('contacts-page', this)">Контакти</button>
+  </nav>
+  <div class="header-actions">
+    <span class="api-status" id="api-status-badge">
+      <span class="api-dot offline" id="api-dot"></span>
+      <span id="api-status-text">API...</span>
+    </span>
+    <!-- Показується коли НЕ залогінений -->
+    <div id="header-auth-btns" style="display:flex;gap:.75rem;align-items:center">
+      <button class="btn-login" onclick="openModal()">Увійти</button>
+      <button class="btn-cta" onclick="showPage('contacts-page', null)">Замовити проєкт</button>
+    </div>
+    <!-- Показується коли залогінений -->
+    <div id="header-user-btns" style="display:none;align-items:center;gap:.75rem">
+      <span style="font-size:.78rem;color:var(--gold)" id="header-user-name"></span>
+      <button class="btn-login" onclick="showPage('dashboard-page',null)" style="border-color:var(--gold);color:var(--gold)">Кабінет →</button>
+      <button class="btn-cta" onclick="logout()">Вийти</button>
+    </div>
+  </div>
+</header>
+
+<!-- HOME -->
+<div class="page active" id="home">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-badge">Дизайн-студія · Львів, Україна</div>
+      <h1 class="hero-title">Створюємо<br><em>образи</em>, що<br><strong>запам'ятовуються</strong></h1>
+      <p class="hero-desc">Комплексний брендинг, UX/UI дизайн та SMM-матеріали для бізнесу, який прагне виділятися.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="showPage('portfolio-page', null)">Переглянути портфоліо</button>
+        <button class="btn-outline" onclick="openModal()">Особистий кабінет</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><div class="stat-num">47+</div><div class="stat-label">Проєктів завершено</div></div>
+        <div class="stat-item"><div class="stat-num">28</div><div class="stat-label">Клієнтів</div></div>
+        <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Роки досвіду</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="dashboard-preview">
+        <div class="dp-header">
+          <div class="dp-dots"><span></span><span></span><span></span></div>
+          <span class="dp-title">DesignStudio Manager</span>
+          <span style="font-size:.65rem;color:var(--text-dim)">v2.1</span>
+        </div>
+        <div class="dp-body">
+          <div class="dp-card"><div class="dp-card-label">Активні проєкти</div><div class="dp-card-val gold">3</div><div class="dp-card-sub">↑ 1 новий цього тижня</div></div>
+          <div class="dp-card"><div class="dp-card-label">Дохід (березень)</div><div class="dp-card-val green">₴87,5k</div><div class="dp-card-sub">↑ +18% vs лютий</div></div>
+          <div class="dp-card"><div class="dp-card-label">Задачі сьогодні</div><div class="dp-card-val accent">7</div><div class="dp-card-sub">2 дедлайни</div></div>
+          <div class="dp-card"><div class="dp-card-label">Файлів uploaded</div><div class="dp-card-val">24</div><div class="dp-card-sub">за цей місяць</div></div>
+        </div>
+        <div class="dp-projects">
+          <div class="dp-proj-title">Поточні проєкти</div>
+          <div class="dp-proj-item"><div class="dp-proj-dot" style="background:var(--green)"></div><span class="dp-proj-name">Ребрендинг TechVision</span><span class="dp-proj-status status-active">Активний</span></div>
+          <div class="dp-proj-item"><div class="dp-proj-dot" style="background:var(--accent)"></div><span class="dp-proj-name">UI GreenLeaf Brand</span><span class="dp-proj-status status-progress">В процесі</span></div>
+          <div class="dp-proj-item"><div class="dp-proj-dot" style="background:var(--gold)"></div><span class="dp-proj-name">SMM Stellar Events</span><span class="dp-proj-status status-new">Новий</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="border-top:1px solid var(--border)">
+    <div class="section-eyebrow">Що ми робимо</div>
+    <h2 class="section-title">Наші <em>послуги</em></h2>
+    <p class="section-sub">Повний спектр дизайнерських рішень</p>
+    <div class="services-grid">
+      <div class="service-card"><div class="service-icon">🎨</div><div class="service-name">Брендинг та айдентика</div><div class="service-desc">Логотип, фірмовий стиль, брендбук та гайдлайни.</div><div class="service-price">від <strong>₴18 000</strong> · 3–6 тижнів</div></div>
+      <div class="service-card"><div class="service-icon">💻</div><div class="service-name">UX/UI Дизайн</div><div class="service-desc">Wireframes, прототипи та фінальний дизайн сайтів і додатків.</div><div class="service-price">від <strong>₴25 000</strong> · 4–8 тижнів</div></div>
+      <div class="service-card"><div class="service-icon">📱</div><div class="service-name">SMM та контент</div><div class="service-desc">Шаблони для Instagram, Facebook, LinkedIn.</div><div class="service-price">від <strong>₴8 000</strong> · 1–2 тижні</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-eyebrow">Наші роботи</div>
+    <h2 class="section-title">Останні <em>проєкти</em></h2>
+    <div class="portfolio-grid">
+      <div class="portfolio-card" onclick="showPage('portfolio-page',null)"><div class="portfolio-img" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">🔷</div><div class="portfolio-body"><div class="portfolio-tag">Брендинг</div><div class="portfolio-title">Ребрендинг TechVision UA</div><div class="portfolio-client">Логотип · Брендбук · Гайдлайни</div></div></div>
+      <div class="portfolio-card" onclick="showPage('portfolio-page',null)"><div class="portfolio-img" style="background:linear-gradient(135deg,#0d2b1e,#1a4d32)">🌿</div><div class="portfolio-body"><div class="portfolio-tag">UX/UI</div><div class="portfolio-title">Сайт GreenLeaf Brand</div><div class="portfolio-client">Wireframes · UI Design · Прототип</div></div></div>
+      <div class="portfolio-card" onclick="showPage('portfolio-page',null)"><div class="portfolio-img" style="background:linear-gradient(135deg,#1a0a2e,#2d1b4e)">✨</div><div class="portfolio-body"><div class="portfolio-tag">SMM</div><div class="portfolio-title">Stellar Events · SMM-kit</div><div class="portfolio-client">Stories · Пости · Банери</div></div></div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem"><button class="btn-outline" onclick="showPage('portfolio-page',null)">Переглянути всі роботи →</button></div>
+  </div>
+
+  <div class="section" style="border-top:1px solid var(--border)">
+    <div class="section-eyebrow">Наша команда</div>
+    <h2 class="section-title">Люди, що <em>творять</em></h2>
+    <div class="team-grid">
+      <div class="team-card"><div class="team-avatar">👩‍💼</div><div class="team-name">Олена Бондаренко</div><div class="team-role">Директор · Art Director</div><div class="team-bio">10+ років у брендингу.</div></div>
+      <div class="team-card"><div class="team-avatar">👨‍💻</div><div class="team-name">Дмитро Савченко</div><div class="team-role">Project Manager</div><div class="team-bio">PMP-сертифікований менеджер.</div></div>
+      <div class="team-card"><div class="team-avatar">👩‍🎨</div><div class="team-name">Юлія Коваль</div><div class="team-role">Senior UX/UI Designer</div><div class="team-bio">Figma-майстер, 15+ дизайн-систем.</div></div>
+      <div class="team-card"><div class="team-avatar">👨‍🎨</div><div class="team-name">Андрій Литвин</div><div class="team-role">Motion & Brand Designer</div><div class="team-bio">After Effects, Lottie, Figma.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div class="page" id="portfolio-page">
+  <div class="portfolio-page">
+    <div class="section-eyebrow" style="padding-top:1rem">Наші роботи</div>
+    <h1 class="section-title" style="margin-top:.5rem">Портфоліо <em>проєктів</em></h1>
+    <p class="section-sub">Понад 47 завершених проєктів</p>
+    <div class="portfolio-filters">
+      <button class="filter-btn active" onclick="filterPortfolio('all',this)">Всі роботи</button>
+      <button class="filter-btn" onclick="filterPortfolio('branding',this)">Брендинг</button>
+      <button class="filter-btn" onclick="filterPortfolio('uxui',this)">UX/UI</button>
+      <button class="filter-btn" onclick="filterPortfolio('smm',this)">SMM</button>
+      <button class="filter-btn" onclick="filterPortfolio('print',this)">Друк</button>
+    </div>
+    <div class="portfolio-full-grid" id="portfolio-grid">
+      <div class="portfolio-full-card" data-cat="branding"><div class="pfc-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);position:relative;overflow:hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+            <circle cx="200" cy="110" r="80" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.3"/>
+            <circle cx="200" cy="110" r="55" fill="none" stroke="#c9a84c" stroke-width="1" opacity="0.2"/>
+            <polygon points="200,50 245,82 245,138 200,170 155,138 155,82" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.8"/>
+            <polygon points="200,70 228,88 228,132 200,150 172,132 172,88" fill="rgba(201,168,76,0.15)"/>
+            <text x="200" y="117" text-anchor="middle" fill="#c9a84c" font-size="14" font-family="serif" font-weight="600">TechVision</text>
+            <line x1="50" y1="30" x2="120" y2="30" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+            <line x1="280" y1="190" x2="350" y2="190" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div><div class="pfc-body"><div class="pfc-category">Брендинг</div><div class="pfc-title">Ребрендинг TechVision UA</div><div class="pfc-desc">Повний ребрендинг IT-компанії: логотип, фірмовий стиль, брендбук.</div><div class="pfc-tags"><span class="pfc-tag">Логотип</span><span class="pfc-tag">Брендбук</span></div></div></div>
+      <div class="portfolio-full-card" data-cat="uxui"><div class="pfc-image" style="background:linear-gradient(135deg,#0d2b1e,#1a5c38);position:relative;overflow:hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+            <rect x="60" y="40" width="280" height="140" rx="12" fill="rgba(78,203,142,0.08)" stroke="rgba(78,203,142,0.3)" stroke-width="1.5"/>
+            <rect x="80" y="60" width="180" height="12" rx="6" fill="rgba(78,203,142,0.4)"/>
+            <rect x="80" y="82" width="120" height="8" rx="4" fill="rgba(78,203,142,0.2)"/>
+            <rect x="80" y="100" width="240" height="60" rx="8" fill="rgba(78,203,142,0.1)" stroke="rgba(78,203,142,0.2)" stroke-width="1"/>
+            <circle cx="310" cy="80" r="22" fill="rgba(78,203,142,0.15)" stroke="rgba(78,203,142,0.4)" stroke-width="1.5"/>
+            <path d="M302 80 Q310 68 318 80 Q310 92 302 80" fill="rgba(78,203,142,0.6)"/>
+            <rect x="90" y="112" width="60" height="36" rx="6" fill="rgba(78,203,142,0.2)"/>
+            <rect x="160" y="112" width="60" height="36" rx="6" fill="rgba(78,203,142,0.15)"/>
+            <rect x="230" y="112" width="60" height="36" rx="6" fill="rgba(78,203,142,0.1)"/>
+          </svg>
+        </div><div class="pfc-body"><div class="pfc-category">UX/UI</div><div class="pfc-title">Сайт GreenLeaf Brand</div><div class="pfc-desc">UX/UI дизайн корпоративного сайту з мобільною адаптацією.</div><div class="pfc-tags"><span class="pfc-tag">Wireframes</span><span class="pfc-tag">Figma</span></div></div></div>
+      <div class="portfolio-full-card" data-cat="smm"><div class="pfc-image" style="background:linear-gradient(135deg,#1a0a2e,#3d1f6b);position:relative;overflow:hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+            <rect x="90" y="30" width="100" height="160" rx="20" fill="rgba(123,108,255,0.15)" stroke="rgba(123,108,255,0.4)" stroke-width="1.5"/>
+            <rect x="100" y="45" width="80" height="120" rx="12" fill="rgba(123,108,255,0.1)"/>
+            <rect x="110" y="55" width="60" height="40" rx="6" fill="rgba(201,168,76,0.3)"/>
+            <rect x="110" y="105" width="40" height="6" rx="3" fill="rgba(255,255,255,0.2)"/>
+            <rect x="110" y="118" width="55" height="6" rx="3" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="140" cy="177" r="4" fill="rgba(123,108,255,0.6)"/>
+            <rect x="210" y="50" width="100" height="120" rx="20" fill="rgba(123,108,255,0.1)" stroke="rgba(123,108,255,0.3)" stroke-width="1"/>
+            <rect x="220" y="65" width="80" height="90" rx="10" fill="rgba(123,108,255,0.08)"/>
+            <rect x="228" y="75" width="64" height="35" rx="5" fill="rgba(201,168,76,0.2)"/>
+            <rect x="228" y="118" width="45" height="5" rx="2.5" fill="rgba(255,255,255,0.15)"/>
+          </svg>
+        </div><div class="pfc-body"><div class="pfc-category">SMM</div><div class="pfc-title">Stellar Events · SMM-kit</div><div class="pfc-desc">30+ шаблонів для Instagram та Facebook у фірмовому стилі.</div><div class="pfc-tags"><span class="pfc-tag">Instagram</span><span class="pfc-tag">Stories</span></div></div></div>
+      <div class="portfolio-full-card" data-cat="branding"><div class="pfc-image" style="background:linear-gradient(135deg,#2b1506,#5c2e0a);position:relative;overflow:hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+            <circle cx="200" cy="110" r="65" fill="rgba(201,168,76,0.1)" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>
+            <circle cx="200" cy="110" r="48" fill="rgba(201,168,76,0.08)" stroke="rgba(201,168,76,0.2)" stroke-width="1"/>
+            <path d="M178 90 Q200 70 222 90 L225 135 Q200 145 175 135 Z" fill="rgba(201,168,76,0.25)" stroke="rgba(201,168,76,0.5)" stroke-width="1.5"/>
+            <path d="M185 82 Q200 75 215 82" fill="none" stroke="rgba(201,168,76,0.4)" stroke-width="2"/>
+            <text x="200" y="114" text-anchor="middle" fill="rgba(201,168,76,0.9)" font-size="11" font-family="serif" letter-spacing="3">URBAN</text>
+            <text x="200" y="128" text-anchor="middle" fill="rgba(201,168,76,0.6)" font-size="8" font-family="sans-serif" letter-spacing="4">CAFE</text>
+            <line x1="130" y1="155" x2="270" y2="155" stroke="rgba(201,168,76,0.2)" stroke-width="1"/>
+          </svg>
+        </div><div class="pfc-body"><div class="pfc-category">Брендинг</div><div class="pfc-title">Urban Cafe Network</div><div class="pfc-desc">Айдентика для мережі кав'ярень: логотип, упаковка, меню-бук.</div><div class="pfc-tags"><span class="pfc-tag">Логотип</span><span class="pfc-tag">Упаковка</span></div></div></div>
+      <div class="portfolio-full-card" data-cat="uxui"><div class="pfc-image" style="background:linear-gradient(135deg,#06132b,#0a2857);position:relative;overflow:hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+            <rect x="40" y="40" width="320" height="140" rx="10" fill="rgba(100,160,255,0.06)" stroke="rgba(100,160,255,0.15)" stroke-width="1"/>
+            <rect x="40" y="40" width="320" height="28" rx="10" fill="rgba(100,160,255,0.1)"/>
+            <circle cx="60" cy="54" r="5" fill="rgba(255,100,100,0.6)"/>
+            <circle cx="78" cy="54" r="5" fill="rgba(255,200,50,0.6)"/>
+            <circle cx="96" cy="54" r="5" fill="rgba(50,220,100,0.6)"/>
+            <rect x="56" y="82" width="90" height="80" rx="6" fill="rgba(100,160,255,0.08)" stroke="rgba(100,160,255,0.2)" stroke-width="1"/>
+            <rect x="62" y="90" width="60" height="6" rx="3" fill="rgba(100,160,255,0.3)"/>
+            <rect x="62" y="104" width="75" height="4" rx="2" fill="rgba(100,160,255,0.15)"/>
+            <rect x="62" y="115" width="50" height="4" rx="2" fill="rgba(100,160,255,0.15)"/>
+            <rect x="62" y="130" width="70" height="20" rx="4" fill="rgba(201,168,76,0.3)"/>
+            <rect x="160" y="82" width="190" height="36" rx="6" fill="rgba(100,160,255,0.08)" stroke="rgba(100,160,255,0.2)" stroke-width="1"/>
+            <rect x="170" y="94" width="120" height="12" rx="3" fill="rgba(100,160,255,0.2)"/>
+            <rect x="160" y="128" width="90" height="34" rx="6" fill="rgba(100,160,255,0.05)" stroke="rgba(100,160,255,0.15)" stroke-width="1"/>
+            <rect x="260" y="128" width="90" height="34" rx="6" fill="rgba(100,160,255,0.05)" stroke="rgba(100,160,255,0.15)" stroke-width="1"/>
+          </svg>
+        </div><div class="pfc-body"><div class="pfc-category">UX/UI</div><div class="pfc-title">SaaS Dashboard · B2B</div><div class="pfc-desc">Дашборд для логістичної компанії. Дизайн-система + 40 компонентів.</div><div class="pfc-tags"><span class="pfc-tag">Dashboard</span><span class="pfc-tag">Design System</span></div></div></div>
+      <div class="portfolio-full-card" data-cat="print"><div class="pfc-image" style="background:linear-gradient(135deg,#1a0a0a,#4d1515);position:relative;overflow:hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+            <rect x="60" y="25" width="180" height="170" rx="8" fill="rgba(255,100,100,0.08)" stroke="rgba(255,100,100,0.2)" stroke-width="1.5"/>
+            <rect x="72" y="38" width="156" height="20" rx="4" fill="rgba(255,100,100,0.2)"/>
+            <rect x="72" y="66" width="100" height="8" rx="4" fill="rgba(255,255,255,0.12)"/>
+            <rect x="72" y="80" width="140" height="5" rx="2.5" fill="rgba(255,255,255,0.08)"/>
+            <rect x="72" y="91" width="120" height="5" rx="2.5" fill="rgba(255,255,255,0.08)"/>
+            <rect x="72" y="107" width="156" height="50" rx="6" fill="rgba(255,100,100,0.06)" stroke="rgba(255,100,100,0.15)" stroke-width="1"/>
+            <rect x="80" y="115" width="60" height="6" rx="3" fill="rgba(255,100,100,0.3)"/>
+            <rect x="80" y="127" width="130" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+            <rect x="80" y="137" width="110" height="4" rx="2" fill="rgba(255,255,255,0.07)"/>
+            <rect x="72" y="168" width="60" height="16" rx="4" fill="rgba(255,100,100,0.25)"/>
+            <rect x="260" y="45" width="80" height="130" rx="6" fill="rgba(255,100,100,0.06)" stroke="rgba(255,100,100,0.15)" stroke-width="1"/>
+            <rect x="268" y="55" width="64" height="40" rx="4" fill="rgba(255,100,100,0.1)"/>
+            <rect x="268" y="103" width="50" height="5" rx="2.5" fill="rgba(255,255,255,0.1)"/>
+            <rect x="268" y="114" width="60" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/>
+          </svg>
+        </div><div class="pfc-body"><div class="pfc-category">Друк</div><div class="pfc-title">Annual Report · FinTech UA</div><div class="pfc-desc">Дизайн річного звіту: 48 сторінок, інфографіки, верстка під друк.</div><div class="pfc-tags"><span class="pfc-tag">Звіт</span><span class="pfc-tag">Інфографіка</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<div class="page" id="services-page">
+  <div class="section" style="padding-top:4rem">
+    <div class="section-eyebrow">Що ми робимо</div>
+    <h1 class="section-title">Послуги <em>студії</em></h1>
+    <p class="section-sub">Повний цикл дизайну — від стратегії до фінальних матеріалів</p>
+    <div class="services-grid" style="margin-top:3rem">
+      <div class="service-card"><div class="service-icon">🎨</div><div class="service-name">Брендинг та айдентика</div><div class="service-desc">Логотип, фірмовий стиль, брендбук та гайдлайни.</div><div class="service-price">від <strong>₴18 000</strong> · 3–6 тижнів</div></div>
+      <div class="service-card"><div class="service-icon">💻</div><div class="service-name">UX/UI Дизайн</div><div class="service-desc">Wireframes, прототипи та фінальний дизайн. Figma-файли для розробників.</div><div class="service-price">від <strong>₴25 000</strong> · 4–8 тижнів</div></div>
+      <div class="service-card"><div class="service-icon">📱</div><div class="service-name">SMM та контент</div><div class="service-desc">Шаблони для соцмереж, Stories, банери у фірмовому стилі.</div><div class="service-price">від <strong>₴8 000</strong> · 1–2 тижні</div></div>
+      <div class="service-card"><div class="service-icon">🖨️</div><div class="service-name">Поліграфія та друк</div><div class="service-desc">Візитки, каталоги, флаєри, банери, упаковка, річні звіти.</div><div class="service-price">від <strong>₴5 000</strong> · 1–3 тижні</div></div>
+      <div class="service-card"><div class="service-icon">📊</div><div class="service-name">Презентації та звіти</div><div class="service-desc">Корпоративні презентації, пітч-деки для інвесторів.</div><div class="service-price">від <strong>₴6 000</strong> · 3–7 днів</div></div>
+      <div class="service-card"><div class="service-icon">🎯</div><div class="service-name">Стратегія та консалтинг</div><div class="service-desc">Аудит брендингу, позиціонування, дизайн-стратегія.</div><div class="service-price">від <strong>₴12 000</strong> · 2–3 тижні</div></div>
+    </div>
+    <div style="text-align:center;margin-top:3rem"><button class="btn-primary" onclick="showPage('contacts-page',null)">Обговорити мій проєкт →</button></div>
+  </div>
+</div>
+
+<!-- CONTACTS -->
+<div class="page" id="contacts-page">
+  <div class="contacts-layout">
+    <div>
+      <div class="section-eyebrow" style="margin-bottom:1rem">Зв'язатися з нами</div>
+      <h1 class="section-title" style="margin-bottom:1rem">Розпочнемо <em>разом</em></h1>
+      <p class="section-sub" style="margin-bottom:2.5rem">Розкажіть про ваш проєкт — відповімо протягом 1 робочого дня.</p>
+      <div class="contact-item"><div class="contact-icon">📍</div><div><div class="contact-type">Адреса</div><div class="contact-val">вул. Дорошенка, 17, оф. 305<br>Львів, 79000, Україна</div></div></div>
+      <div class="contact-item"><div class="contact-icon">📧</div><div><div class="contact-type">Email</div><div class="contact-val"><a href="mailto:hello@designstudio.ua">hello@designstudio.ua</a></div></div></div>
+      <div class="contact-item"><div class="contact-icon">📞</div><div><div class="contact-type">Телефон</div><div class="contact-val"><a href="tel:+380322345678">+38 (032) 234-56-78</a></div></div></div>
+      <div class="contact-item"><div class="contact-icon">⏰</div><div><div class="contact-type">Робочі години</div><div class="contact-val">Пн–Пт: 9:00 – 18:00 · Сб: 10:00 – 14:00</div></div></div>
+      <div style="margin-top:2.5rem;border-radius:20px;overflow:hidden;border:1px solid var(--border);height:280px;position:relative">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2573.4!2d24.0297!3d49.8429!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x473add7432af0e3b%3A0xd06e3a71f8ff5843!2z0LLRg9C70LjRhtGPINCU0L7RgNC-0YjQtdC90LrQsCwgMTcsINCb0YzQstGW0LIsINCb0YzQstGW0LLRgdGM0LrQsCDQvtCx0LvQsNGB0YLRjCwgNzkwMDA!5e0!3m2!1suk!2sua!4v1710000000000!5m2!1suk!2sua"
+        width="100%" height="280" style="border:0;filter:invert(90%) hue-rotate(180deg) saturate(0.8)"
+        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--void);font-size:.75rem;font-weight:700;padding:.4rem 1rem;border-radius:100px;white-space:nowrap;z-index:10">
+        📍 вул. Дорошенка, 17 · Центр Львова
+      </div>
+    </div>
+    </div>
+    <div>
+      <div class="contact-form-panel">
+        <div class="form-title">Надіслати запит</div>
+        <div class="form-sub">Заповніть форму і ми зв'яжемося з вами</div>
+        <form id="contact-form" onsubmit="submitContactForm(event)">
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Ім'я *</label><input class="form-input" id="cf-name" type="text" placeholder="Іван Іваненко" required></div>
+            <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="cf-email" type="email" placeholder="you@company.com" required></div>
+          </div>
+          <div class="form-group"><label class="form-label">Компанія</label><input class="form-input" id="cf-company" type="text" placeholder="Назва компанії"></div>
+          <div class="form-group"><label class="form-label">Тип послуги *</label>
+            <select class="form-select" id="cf-service" required>
+              <option value="">Оберіть послугу...</option>
+              <option>Брендинг та айдентика</option><option>UX/UI Дизайн</option>
+              <option>SMM та контент</option><option>Поліграфія та друк</option>
+              <option>Презентації та звіти</option><option>Інше</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Бюджет</label>
+            <select class="form-select" id="cf-budget">
+              <option value="">Орієнтовний бюджет</option>
+              <option>до ₴10 000</option><option>₴10 000 – ₴30 000</option>
+              <option>₴30 000 – ₴80 000</option><option>₴80 000+</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Опис проєкту *</label><textarea class="form-textarea" id="cf-desc" placeholder="Розкажіть про ваш проєкт..." required></textarea></div>
+          <button type="submit" class="form-submit" id="cf-submit">✦ Надіслати запит</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="dashboard-page">
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Головне меню</div>
+        <button class="sidebar-item active" onclick="showDash('dash-overview',this)"><span class="icon">🏠</span> Огляд</button>
+        <button class="sidebar-item" onclick="showDash('dash-projects',this)"><span class="icon">📁</span> Проєкти <span class="sidebar-badge" id="sb-projects">3</span></button>
+        <button class="sidebar-item" onclick="showDash('dash-tasks',this)"><span class="icon">✅</span> Задачі <span class="sidebar-badge" id="sb-tasks">7</span></button>
+        <button class="sidebar-item" onclick="showDash('dash-clients',this)"><span class="icon">👥</span> Клієнти</button>
+        <button class="sidebar-item" onclick="showDash('dash-finance',this)"><span class="icon">💰</span> Фінанси</button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Ресурси</div>
+        <button class="sidebar-item" onclick="showDash('dash-files',this)"><span class="icon">🗂️</span> Файли</button>
+        <button class="sidebar-item" onclick="showDash('dash-notifications',this)"><span class="icon">🔔</span> Сповіщення <span class="sidebar-badge gold" id="sb-notifs">4</span></button>
+        <button class="sidebar-item" onclick="showDash('dash-orders',this)"><span class="icon">📬</span> Замовлення <span class="sidebar-badge" id="sb-orders" style="background:var(--accent2)">0</span></button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Акаунт</div>
+        <div style="padding:.6rem .75rem;font-size:.82rem;color:var(--text-muted);display:flex;align-items:center;gap:.5rem">
+          <span style="width:28px;height:28px;background:var(--gold-dim);border-radius:50%;display:flex;align-items:center;justify-content:center">👩‍💼</span>
+          <div><div style="color:var(--text);font-size:.8rem;font-weight:500" id="sidebar-username">Олена Б.</div><div style="font-size:.68rem;color:var(--gold)" id="sidebar-role">Director</div></div>
+        </div>
+        <button class="sidebar-item" onclick="logout()"><span class="icon">🚪</span> Вийти</button>
+      </div>
+    </aside>
+
+    <main class="dash-content">
+      <!-- OVERVIEW -->
+      <div class="dash-subpage active" id="dash-overview">
+        <div class="dash-header">
+          <div class="dash-title">Доброго ранку, <span id="dash-username">Олено</span> ☀️</div>
+          <div class="dash-sub" id="dash-subline">Завантаження...</div>
+        </div>
+        <div class="metrics-grid" id="metrics-grid">
+          <div class="metric-card" style="--accent-color:var(--gold)"><div class="metric-icon">📁</div><div class="metric-label">Активні проєкти</div><div class="metric-val" id="m-projects">—</div><div class="metric-change">↑ +1 цього тижня</div></div>
+          <div class="metric-card" style="--accent-color:var(--green)"><div class="metric-icon">💰</div><div class="metric-label">Дохід (оплачено)</div><div class="metric-val" id="m-income">—</div><div class="metric-change">↑ рахунки оплачені</div></div>
+          <div class="metric-card" style="--accent-color:var(--accent)"><div class="metric-icon">✅</div><div class="metric-label">Задачі в роботі</div><div class="metric-val" id="m-tasks">—</div><div class="metric-change">активні задачі</div></div>
+          <div class="metric-card" style="--accent-color:var(--accent2)"><div class="metric-icon">👥</div><div class="metric-label">Клієнтів активних</div><div class="metric-val" id="m-clients">—</div><div class="metric-change">в базі CRM</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Активні проєкти</span><button class="panel-action" onclick="showDash('dash-projects',null)">Всі →</button></div>
+          <table><thead><tr><th>Проєкт</th><th>Клієнт</th><th>Статус</th><th>Прогрес</th><th>Дедлайн</th><th>Бюджет</th></tr></thead>
+          <tbody id="overview-projects-tbody"><tr class="loading-row"><td colspan="6"><span class="loader"></span> Завантаження з API...</td></tr></tbody></table>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Задачі сьогодні</span><button class="panel-action" onclick="showDash('dash-tasks',null)">Всі →</button></div>
+            <div id="overview-tasks-list" style="padding:.5rem 1.5rem"><div style="padding:1rem 0;color:var(--text-dim);font-size:.85rem"><span class="loader"></span> Завантаження...</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Фінанси</span><button class="panel-action" onclick="showDash('dash-finance',null)">Деталі →</button></div>
+            <div class="chart-wrap"><div class="chart-bars" id="mini-chart"></div><div class="chart-labels" id="mini-labels"></div>
+              <div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div> Дохід</div><div class="legend-item"><div class="legend-dot" style="background:rgba(123,108,255,.7)"></div> Витрати</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="dash-subpage" id="dash-projects">
+        <div class="dash-header"><div class="dash-title">Проєкти</div><div class="dash-sub">Управління проєктами студії</div></div>
+        <div class="panel"><table>
+          <thead><tr><th>№</th><th>Назва проєкту</th><th>Клієнт</th><th>Менеджер</th><th>Статус</th><th>Прогрес</th><th>Дедлайн</th><th>Бюджет</th></tr></thead>
+          <tbody id="projects-tbody"><tr class="loading-row"><td colspan="8"><span class="loader"></span> Завантаження з MongoDB...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <!-- TASKS -->
+      <div class="dash-subpage" id="dash-tasks">
+        <div class="dash-header"><div class="dash-title">Задачі</div><div class="dash-sub">Kanban-дошка поточних задач</div></div>
+        <div class="tasks-grid" id="tasks-kanban">
+          <div><div class="task-col-header"><div class="task-col-dot" style="background:var(--text-dim)"></div> Очікують <span id="todo-count" style="margin-left:auto">0</span></div><div id="col-todo"></div></div>
+          <div><div class="task-col-header"><div class="task-col-dot" style="background:var(--accent)"></div> В роботі <span id="inprog-count" style="margin-left:auto">0</span></div><div id="col-inprog"></div></div>
+          <div><div class="task-col-header"><div class="task-col-dot" style="background:var(--green)"></div> Виконано <span id="done-count" style="margin-left:auto">0</span></div><div id="col-done"></div></div>
+        </div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div class="dash-subpage" id="dash-clients">
+        <div class="dash-header"><div class="dash-title">Клієнти</div><div class="dash-sub" id="clients-sub">CRM-модуль</div></div>
+        <div class="panel"><table>
+          <thead><tr><th>Клієнт</th><th>Контакт</th><th>Статус</th><th>Проєктів</th><th>Сума оплат</th><th>Менеджер</th></tr></thead>
+          <tbody id="clients-tbody"><tr class="loading-row"><td colspan="6"><span class="loader"></span> Завантаження з MongoDB...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <!-- FINANCE -->
+      <div class="dash-subpage" id="dash-finance">
+        <div class="dash-header"><div class="dash-title">Фінанси</div><div class="dash-sub">Рахунки, платежі та аналітика</div></div>
+        <div class="metrics-grid" style="margin-bottom:1.5rem">
+          <div class="metric-card" style="--accent-color:var(--green)"><div class="metric-label">Загальна сума</div><div class="metric-val" id="f-total">—</div><div class="metric-change">всі рахунки</div></div>
+          <div class="metric-card" style="--accent-color:var(--gold)"><div class="metric-label">Оплачено</div><div class="metric-val" id="f-paid">—</div><div class="metric-change">↑ оплачені рахунки</div></div>
+          <div class="metric-card" style="--accent-color:var(--accent2)"><div class="metric-label">Очікують оплати</div><div class="metric-val" id="f-pending">—</div><div class="metric-change down">до сплати</div></div>
+          <div class="metric-card" style="--accent-color:var(--accent)"><div class="metric-label">Рахунків усього</div><div class="metric-val" id="f-count">—</div><div class="metric-change">в системі</div></div>
+        </div>
+        <div class="panel"><div class="panel-head"><span class="panel-title">Рахунки-фактури</span></div>
+          <div id="invoices-list" style="padding:.5rem 0"><div style="padding:2rem;text-align:center;color:var(--text-dim)"><span class="loader"></span> Завантаження...</div></div>
+        </div>
+      </div>
+
+      <!-- FILES -->
+      <div class="dash-subpage" id="dash-files">
+        <div class="dash-header"><div class="dash-title">Файли</div><div class="dash-sub" id="files-sub">Файлове сховище</div></div>
+        <div class="panel"><table>
+          <thead><tr><th>Назва файлу</th><th>Проєкт</th><th>Тип</th><th>Розмір</th><th>Версія</th><th>Завантажив</th><th>Дата</th></tr></thead>
+          <tbody id="files-tbody"><tr class="loading-row"><td colspan="7"><span class="loader"></span> Завантаження...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="dash-subpage" id="dash-orders">
+        <div class="dash-header">
+          <div class="dash-title">Замовлення <span style="font-style:italic;color:var(--gold)">з сайту</span></div>
+          <div class="dash-sub" id="orders-sub">Заявки від потенційних клієнтів</div>
+        </div>
+        <div class="panel" id="orders-list">
+          <div style="padding:2rem;text-align:center;color:var(--text-dim)"><span class="loader"></span> Завантаження...</div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="dash-subpage" id="dash-notifications">
+        <div class="dash-header"><div class="dash-title">Сповіщення</div><div class="dash-sub" id="notif-sub">Завантаження...</div></div>
+        <div class="panel" id="notif-list"><div style="padding:2rem;text-align:center;color:var(--text-dim)"><span class="loader"></span> Завантаження...</div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<footer id="main-footer">
+  <div class="footer-inner">
+    <div><div class="footer-logo-text">Design<span>Studio</span> Manager</div><div class="footer-tagline">Комплексна система управління дизайн-студією.</div></div>
+    <div><div class="footer-col-title">Послуги</div><a class="footer-link" href="#" onclick="showPage('services-page',null);return false;">Брендинг</a><a class="footer-link" href="#" onclick="showPage('services-page',null);return false;">UX/UI Дизайн</a><a class="footer-link" href="#" onclick="showPage('services-page',null);return false;">SMM-контент</a></div>
+    <div><div class="footer-col-title">Студія</div><a class="footer-link" href="#" onclick="showPage('portfolio-page',null);return false;">Портфоліо</a><a class="footer-link" href="#" onclick="showPage('contacts-page',null);return false;">Контакти</a><a class="footer-link" href="#" onclick="openModal();return false;">Кабінет</a></div>
+    <div><div class="footer-col-title">Соцмережі</div><a class="footer-link" href="#">Instagram</a><a class="footer-link" href="#">Behance</a><a class="footer-link" href="#">LinkedIn</a></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 DesignStudio Manager · Курс «Проектування та розробка ІС»</span>
+    <span>Козак М.В. · ПП-32 · Львівська політехніка</span>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">Вітаємо 👋</div>
+    <div class="modal-sub" id="modal-sub">Увійдіть до особистого кабінету</div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Увійти</button>
+      <button class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Реєстрація</button>
+    </div>
+    <!-- ФОРМА ВХОДУ -->
+    <div id="form-login">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="login-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label class="form-label">Пароль</label><input class="form-input" type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="form-submit" id="login-btn" onclick="doLogin()">Увійти до кабінету</button>
+      <div class="demo-hint"><strong>Demo:</strong> olena.bondarenko@designstudio.com · <strong>admin123</strong></div>
+    </div>
+    <!-- ФОРМА РЕЄСТРАЦІЇ -->
+    <div id="form-register" style="display:none">
+      <div class="form-group"><label class="form-label">Ім'я *</label><input class="form-input" type="text" id="reg-name" placeholder="Іван Іваненко"></div>
+      <div class="form-group"><label class="form-label">Email *</label><input class="form-input" type="email" id="reg-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label class="form-label">Пароль *</label><input class="form-input" type="password" id="reg-pass" placeholder="мінімум 6 символів"></div>
+      <div class="form-group"><label class="form-label">Роль</label>
+        <select class="form-select" id="reg-role">
+          <option value="designer">Дизайнер</option>
+          <option value="manager">Менеджер проєктів</option>
+          <option value="accountant">Бухгалтер</option>
+          <option value="director">Директор (адмін)</option>
+        </select>
+      </div>
+      <button class="form-submit" id="reg-btn" onclick="doRegister()">Зареєструватись</button>
+      <div class="demo-hint" style="margin-top:.75rem">
+        <strong>Увага:</strong> Реєстрація доступна тільки якщо ви <strong style="color:var(--gold)">авторизовані як директор</strong>, або це <strong style="color:var(--gold)">перший акаунт</strong> в системі.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="toast-title" id="toast-title"></div><div class="toast-msg" id="toast-msg"></div></div>
+
+<script>
+// ================================================================
+// API CONFIG
+// ================================================================
+const API_BASE = 'http://localhost:3000/api';
+let accessToken = localStorage.getItem('ds_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('ds_user') || 'null');
+let toastTimer;
+
+// ── API helper ──────────────────────────────────────────────────
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  const res = await fetch(API_BASE + path, { headers, ...options });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+// ── Health check ────────────────────────────────────────────────
+async function checkApiStatus() {
+  try {
+    await fetch(API_BASE + '/health');
+    document.getElementById('api-dot').className = 'api-dot';
+    document.getElementById('api-status-text').textContent = 'API online';
+  } catch {
+    document.getElementById('api-dot').className = 'api-dot offline';
+    document.getElementById('api-status-text').textContent = 'API offline';
+  }
+}
+checkApiStatus();
+setInterval(checkApiStatus, 30000);
+
+// ── Toast ───────────────────────────────────────────────────────
+function showToast(title, msg, isError = false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Navigation ──────────────────────────────────────────────────
+function showPage(pageId, btn) {
+  if (pageId === 'dashboard-page' && !accessToken) { openModal(); return; }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  if (btn) {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  document.getElementById('main-footer').style.display = pageId === 'dashboard-page' ? 'none' : 'block';
+  window.scrollTo(0, 0);
+  if (pageId === 'dashboard-page') loadDashboard();
+}
+
+function showDash(subId, btn) {
+  document.querySelectorAll('.dash-subpage').forEach(p => p.classList.remove('active'));
+  document.getElementById(subId).classList.add('active');
+  if (btn) {
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  // Lazy load модулів
+  if (subId === 'dash-projects')      loadProjects();
+  if (subId === 'dash-tasks')         loadTasks();
+  if (subId === 'dash-clients')       loadClients();
+  if (subId === 'dash-finance')       loadFinance();
+  if (subId === 'dash-files')         loadFiles();
+  if (subId === 'dash-notifications') loadNotifications();
+  if (subId === 'dash-orders')        loadOrders();
+}
+
+// ── Auth ────────────────────────────────────────────────────────
+function openModal()  { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass  = document.getElementById('login-pass').value;
+  const btn   = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Вхід...';
+  try {
+    const data = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password: pass }),
+    });
+    accessToken = data.accessToken;
+    currentUser = data.user;
+    localStorage.setItem('ds_token', accessToken);
+    localStorage.setItem('ds_user', JSON.stringify(currentUser));
+    if (data.refreshToken) localStorage.setItem('ds_refresh', data.refreshToken);
+    closeModal();
+    if (typeof updateHeaderAuth === 'function') updateHeaderAuth();
+    showPage('dashboard-page', null);
+    showToast('Вхід успішний ✓', 'Ласкаво просимо, ' + currentUser.name + '!');
+  } catch (err) {
+    showToast('Помилка входу', err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Увійти до кабінету';
+  }
+}
+
+async function logout() {
+  try { await api('/auth/logout', { method: 'POST' }); } catch {}
+  accessToken = null; currentUser = null;
+  localStorage.removeItem('ds_token');
+  localStorage.removeItem('ds_user');
+  showPage('home', document.querySelector('nav button'));
+  document.querySelector('nav button').classList.add('active');
+  updateHeaderAuth();
+  showToast('Вихід', 'Ви успішно вийшли з системи');
+}
+
+// ── Оновити хедер при завантаженні
+updateHeaderAuth();
+
+// ── Auto-login if token exists ──────────────────────────────────
+if (accessToken && currentUser) {
+  // перевіримо токен тихо
+  api('/auth/me').catch(() => {
+    accessToken = null; currentUser = null;
+    localStorage.removeItem('ds_token'); localStorage.removeItem('ds_user');
+  });
+}
+
+// ── Dashboard loader ────────────────────────────────────────────
+async function loadDashboard() {
+  const user = currentUser;
+  if (!user) return;
+  // Оновити sidebar
+  document.getElementById('sidebar-username').textContent = user.name.split(' ')[0] + ' ' + (user.name.split(' ')[1]?.[0] || '') + '.';
+  document.getElementById('sidebar-role').textContent = roleLabel(user.role);
+  document.getElementById('dash-username').textContent = user.name.split(' ')[0];
+  document.getElementById('dash-subline').textContent = new Date().toLocaleDateString('uk-UA', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Паралельні запити
+  try {
+    const [projData, taskData, clientData, invoiceData] = await Promise.all([
+      api('/projects'),
+      api('/tasks'),
+      api('/clients'),
+      api('/invoices'),
+    ]);
+
+    // Метрики
+    const activeProj = projData.projects.filter(p => p.status === 'active' || p.status === 'new').length;
+    document.getElementById('m-projects').textContent = activeProj;
+    document.getElementById('m-tasks').textContent = taskData.tasks.filter(t => t.status !== 'done').length;
+    document.getElementById('m-clients').textContent = clientData.total;
+    document.getElementById('m-income').textContent = '₴' + formatNum(invoiceData.analytics.paidAmount);
+
+    // Sidebar badges
+    const activeProjCount = projData.projects.filter(p => p.status === 'active' || p.status === 'new').length;
+    const activeTaskCount = taskData.tasks.filter(t=>t.status!=='done').length;
+    const sbProj = document.getElementById('sb-projects');
+    const sbTask = document.getElementById('sb-tasks');
+    if (sbProj) { sbProj.textContent = activeProjCount; sbProj.style.display = activeProjCount ? 'inline' : 'none'; }
+    if (sbTask) { sbTask.textContent = activeTaskCount; sbTask.style.display = activeTaskCount ? 'inline' : 'none'; }
+
+    // Overview projects table
+    const tbody = document.getElementById('overview-projects-tbody');
+    tbody.innerHTML = projData.projects.slice(0,5).map(p => `
+      <tr>
+        <td><strong>${p.title}</strong></td>
+        <td>${p.client?.companyName || '—'}</td>
+        <td>${statusTag(p.status)}</td>
+        <td>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:${p.progress}%;background:${p.progress===100?'var(--green)':'var(--gold)'}"></div></div>
+          <div style="font-size:.68rem;color:var(--text-dim);margin-top:.25rem">${p.progress}%</div>
+        </td>
+        <td style="color:var(--text-muted)">${p.deadline ? new Date(p.deadline).toLocaleDateString('uk-UA') : '—'}</td>
+        <td style="color:var(--gold);font-family:var(--font-display)">₴${formatNum(p.budget)}</td>
+      </tr>`).join('');
+
+    // Overview tasks
+    const taskList = document.getElementById('overview-tasks-list');
+    const activeTasks = taskData.tasks.filter(t=>t.status!=='done').slice(0,4);
+    taskList.innerHTML = activeTasks.map(t => `
+      <div class="notif-item ${t.status==='in_progress'?'unread':''}">
+        <div class="notif-dot ${t.status==='todo'?'read':''}"></div>
+        <div class="notif-text">
+          <div class="notif-type">${t.project?.title || ''}</div>
+          <div>${t.title}</div>
+          <div class="notif-time">${priorityLabel(t.priority)} · ${t.assignee?.name || '—'}</div>
+        </div>
+      </div>`).join('');
+
+    buildChart();
+
+    // Лічильник нових замовлень
+    try {
+      const { orders } = await api('/orders');
+      const newCount = orders.filter(o => o.status === 'new').length;
+      const sbOrders = document.getElementById('sb-orders');
+      if (sbOrders) {
+        sbOrders.textContent = newCount || '';
+        sbOrders.style.display = newCount ? 'inline' : 'none';
+      }
+    } catch {}
+
+  } catch (err) {
+    showToast('Помилка завантаження', err.message, true);
+  }
+}
+
+// ── Projects ────────────────────────────────────────────────────
+async function loadProjects() {
+  const tbody = document.getElementById('projects-tbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="8"><span class="loader"></span> Завантаження з MongoDB...</td></tr>';
+  try {
+    const { projects } = await api('/projects');
+    tbody.innerHTML = projects.map(p => `
+      <tr>
+        <td style="color:var(--text-dim)">${p.projectId || '—'}</td>
+        <td><strong>${p.title}</strong></td>
+        <td>${p.client?.companyName || '—'}</td>
+        <td>${p.manager?.name || '—'}</td>
+        <td>${statusTag(p.status)}</td>
+        <td><div class="progress-bar-wrap"><div class="progress-bar" style="width:${p.progress}%"></div></div></td>
+        <td style="color:var(--text-muted)">${p.deadline ? new Date(p.deadline).toLocaleDateString('uk-UA') : '—'}</td>
+        <td style="color:var(--gold);font-family:var(--font-display)">₴${formatNum(p.budget)}</td>
+      </tr>`).join('') || '<tr class="loading-row"><td colspan="8">Проєктів немає</td></tr>';
+  } catch(e) { tbody.innerHTML = `<tr class="loading-row"><td colspan="8">❌ ${e.message}</td></tr>`; }
+}
+
+// ── Tasks Kanban ────────────────────────────────────────────────
+async function loadTasks() {
+  try {
+    const { tasks, grouped } = await api('/tasks?assignee=all');
+    const renderCol = (tasks, extraStyle='') => tasks.map(t => `
+      <div class="task-card" style="${extraStyle}">
+        <div class="task-title">${t.title}</div>
+        <div class="task-meta">
+          <span class="task-project">${t.project?.title || ''}</span>
+          <span class="task-priority priority-${t.priority}">${t.priority.toUpperCase()}</span>
+          <span class="task-deadline">${t.deadline ? new Date(t.deadline).toLocaleDateString('uk-UA',{day:'2-digit',month:'2-digit'}) : ''}</span>
+        </div>
+      </div>`).join('');
+
+    // grouped може бути undefined якщо всі задачі без фільтру
+    const allTasks = tasks || [];
+    const todo    = allTasks.filter(t=>t.status==='todo');
+    const inprog  = allTasks.filter(t=>t.status==='in_progress');
+    const done    = allTasks.filter(t=>t.status==='done');
+
+    document.getElementById('col-todo').innerHTML   = renderCol(todo)   || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
+    document.getElementById('col-inprog').innerHTML = renderCol(inprog,'border-color:rgba(123,108,255,.3)') || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
+    document.getElementById('col-done').innerHTML   = renderCol(done).replace(/class="task-card"/g,'class="task-card" style="opacity:.65"') || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
+    document.getElementById('todo-count').textContent   = todo.length;
+    document.getElementById('inprog-count').textContent = inprog.length;
+    document.getElementById('done-count').textContent   = done.length;
+  } catch(e) { showToast('Задачі', e.message, true); }
+}
+
+// ── Clients ─────────────────────────────────────────────────────
+async function loadClients() {
+  const tbody = document.getElementById('clients-tbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="6"><span class="loader"></span> Завантаження...</td></tr>';
+  try {
+    const { clients, total } = await api('/clients');
+    document.getElementById('clients-sub').textContent = `CRM-модуль · ${total} клієнтів`;
+    tbody.innerHTML = clients.map(c => `
+      <tr>
+        <td><strong>${c.companyName}</strong></td>
+        <td>${c.contactName}<br><span style="font-size:.75rem;color:var(--text-dim)">${c.email}</span></td>
+        <td>${clientStatusTag(c.status)}</td>
+        <td>${c.projectCount || 0}</td>
+        <td style="color:var(--gold);font-family:var(--font-display)">₴${formatNum(c.totalPaid)}</td>
+        <td>${c.manager?.name || '—'}</td>
+      </tr>`).join('') || '<tr class="loading-row"><td colspan="6">Клієнтів немає</td></tr>';
+  } catch(e) { tbody.innerHTML = `<tr class="loading-row"><td colspan="6">❌ ${e.message}</td></tr>`; }
+}
+
+// ── Finance ──────────────────────────────────────────────────────
+async function loadFinance() {
+  try {
+    const { invoices, analytics } = await api('/invoices');
+    document.getElementById('f-total').textContent   = '₴' + formatNum(analytics.totalAmount);
+    document.getElementById('f-paid').textContent    = '₴' + formatNum(analytics.paidAmount);
+    document.getElementById('f-pending').textContent = '₴' + formatNum(analytics.pendingAmount);
+    document.getElementById('f-count').textContent   = invoices.length;
+
+    document.getElementById('invoices-list').innerHTML = invoices.map(inv => `
+      <div class="invoice-card">
+        <div class="invoice-num">${inv.invoiceNumber}</div>
+        <div class="invoice-client">
+          <div class="invoice-client-name">${inv.client?.companyName || '—'}</div>
+          <div class="invoice-date">Виставлено: ${new Date(inv.issuedAt).toLocaleDateString('uk-UA')}${inv.paidAt ? ' · Оплачено: ' + new Date(inv.paidAt).toLocaleDateString('uk-UA') : ' · Очікує оплати'}</div>
+        </div>
+        ${invoiceStatusTag(inv.status)}
+        <div class="invoice-amount">₴${formatNum(inv.amount)}</div>
+      </div>`).join('') || '<div style="padding:2rem;text-align:center;color:var(--text-dim)">Рахунків немає</div>';
+  } catch(e) { showToast('Фінанси', e.message, true); }
+}
+
+// ── Files ────────────────────────────────────────────────────────
+async function loadFiles() {
+  const tbody = document.getElementById('files-tbody');
+  try {
+    const { files } = await api('/files');
+    document.getElementById('files-sub').textContent = `Файлове сховище · ${files.length} файлів`;
+    const icons = { Illustrator:'🎨', PDF:'📄', Figma:'🖼️', default:'📁' };
+    tbody.innerHTML = files.map(f => `
+      <tr>
+        <td>${icons[f.fileType]||icons.default} <strong>${f.originalName}</strong></td>
+        <td>${f.project?.title || '—'}</td>
+        <td>${fileTypeTag(f.fileType)}</td>
+        <td>${formatBytes(f.size)}</td>
+        <td>${f.version}</td>
+        <td>${f.uploadedBy?.name || '—'}</td>
+        <td>${new Date(f.createdAt).toLocaleDateString('uk-UA')}</td>
+      </tr>`).join('') || '<tr class="loading-row"><td colspan="7">Файлів немає</td></tr>';
+  } catch(e) { tbody.innerHTML = `<tr class="loading-row"><td colspan="7">❌ ${e.message}</td></tr>`; }
+}
+
+// ── Notifications ────────────────────────────────────────────────
+async function loadNotifications() {
+  if (!currentUser) return;
+  try {
+    const { notifications, unreadCount } = await api(`/notifications/${currentUser.id}`);
+    document.getElementById('notif-sub').textContent = `${unreadCount} непрочитаних`;
+    document.getElementById('sb-notifs').textContent = unreadCount;
+
+    const notifTypeLabel = {task:'Нова задача',payment:'Оплата',deadline:'Дедлайн',new_client:'Новий клієнт',system:'Система'};
+    document.getElementById('notif-list').innerHTML = notifications.map(n => `
+      <div class="notif-item ${n.isRead?'':'unread'}" onclick="markRead('${n._id}',this)">
+        <div class="notif-dot ${n.isRead?'read':''}"></div>
+        <div class="notif-text">
+          <div class="notif-type" ${n.isRead?'style="color:var(--text-dim)"':''}>${notifTypeLabel[n.type]||n.type}</div>
+          <div ${n.isRead?'style="color:var(--text-muted)"':''}>${n.message}</div>
+          <div class="notif-time">${timeAgo(n.createdAt)}</div>
+        </div>
+      </div>`).join('') || '<div style="padding:2rem;text-align:center;color:var(--text-dim)">Сповіщень немає</div>';
+  } catch(e) { showToast('Сповіщення', e.message, true); }
+}
+
+async function markRead(id, el) {
+  try {
+    await api(`/notifications/${id}/read`, { method: 'PATCH' });
+    el.classList.remove('unread');
+    el.querySelector('.notif-dot').classList.add('read');
+  } catch {}
+}
+
+// ── Contact form → POST /api/orders ─────────────────────────────
+async function submitContactForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('cf-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Надсилання...';
+  try {
+    const name  = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const service = document.getElementById('cf-service').value;
+    const desc  = document.getElementById('cf-desc').value.trim();
+
+    if (!name || !email || !service || !desc) {
+      showToast('Помилка', 'Заповніть всі обов\'язкові поля', true);
+      btn.disabled = false;
+      btn.textContent = '✦ Надіслати запит';
+      return;
+    }
+
+    const data = await api('/orders', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        email,
+        company:     document.getElementById('cf-company').value.trim(),
+        serviceType: service,
+        budget:      document.getElementById('cf-budget').value,
+        description: desc,
+      }),
+    });
+
+    showToast('✅ Заявку надіслано!', 'Підтвердження відправлено на ' + email);
+    document.getElementById('contact-form').reset();
+
+    // Показати success стан кнопки
+    btn.style.background = 'var(--green)';
+    btn.textContent = '✓ Надіслано!';
+    setTimeout(() => {
+      btn.style.background = '';
+      btn.textContent = '✦ Надіслати запит';
+    }, 3000);
+
+  } catch(err) {
+    showToast('Помилка відправки', err.message, true);
+    btn.disabled = false;
+    btn.textContent = '✦ Надіслати запит';
+  }
+}
+
+// ── Portfolio filter ─────────────────────────────────────────────
+function filterPortfolio(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.portfolio-full-card').forEach(c=>{
+    c.style.display = (cat==='all'||c.dataset.cat===cat)?'block':'none';
+  });
+}
+
+// ── Finance chart ────────────────────────────────────────────────
+function buildChart() {
+  const months  = ['Жов','Лис','Гру','Січ','Лют','Бер'];
+  const income  = [32,45,78,42,55,87];
+  const expense = [18,22,31,20,28,35];
+  const max = Math.max(...income,...expense);
+  const chartEl  = document.getElementById('mini-chart');
+  const labelsEl = document.getElementById('mini-labels');
+  if (!chartEl) return;
+  chartEl.innerHTML = ''; labelsEl.innerHTML = '';
+  months.forEach((m,i)=>{
+    const g = document.createElement('div'); g.className='chart-bar-group';
+    const b1=document.createElement('div'); b1.className='bar income'; b1.style.height=(income[i]/max*140)+'px';
+    const b2=document.createElement('div'); b2.className='bar expense'; b2.style.height=(expense[i]/max*140)+'px';
+    g.append(b1,b2); chartEl.appendChild(g);
+    const l=document.createElement('div'); l.className='chart-label'; l.textContent=m; labelsEl.appendChild(l);
+  });
+}
+setTimeout(buildChart, 100);
+
+// ── Helpers ──────────────────────────────────────────────────────
+function formatNum(n) { return Number(n||0).toLocaleString('uk-UA'); }
+function formatBytes(b) { if(!b)return'—'; if(b>1048576)return(b/1048576).toFixed(1)+' МБ'; return(b/1024).toFixed(0)+' КБ'; }
+function roleLabel(r) { return {director:'Director',manager:'Manager',designer:'Designer',accountant:'Accountant'}[r]||r; }
+function priorityLabel(p) { return {high:'🔴 High',medium:'🟡 Medium',low:'🟢 Low'}[p]||p; }
+function timeAgo(d) {
+  const diff = Date.now() - new Date(d).getTime();
+  const h = Math.floor(diff/3600000); const days = Math.floor(diff/86400000);
+  if(h<1) return 'щойно'; if(h<24) return `${h} год. тому`;
+  if(days<7) return `${days} дн. тому`; return `${Math.floor(days/7)} тиж. тому`;
+}
+function statusTag(s) {
+  const m = {
+    active:    '<span class="tag tag-green">В роботі</span>',
+    completed: '<span class="tag tag-purple">Завершено</span>',
+    new:       '<span class="tag tag-gold">Новий</span>',
+    paused:    '<span class="tag tag-gray">Призупинено</span>',
+    cancelled: '<span class="tag tag-red">Скасовано</span>',
+  };
+  return m[s] || '<span class="tag tag-gray">' + s + '</span>';
+}
+function clientStatusTag(s) {
+  const m={active:'<span class="tag tag-green">Активний</span>',potential:'<span class="tag tag-gold">Потенційний</span>',inactive:'<span class="tag tag-gray">Неактивний</span>'};
+  return m[s]||s;
+}
+function invoiceStatusTag(s) {
+  const m={paid:'<span class="tag tag-green">Оплачено</span>',pending:'<span class="tag tag-gold">Очікує</span>',overdue:'<span class="tag tag-red">Прострочено</span>',cancelled:'<span class="tag tag-gray">Скасовано</span>'};
+  return m[s]||s;
+}
+function fileTypeTag(t) {
+  const m={Illustrator:'<span class="tag tag-gold">Illustrator</span>',PDF:'<span class="tag tag-red">PDF</span>',Figma:'<span class="tag tag-purple">Figma</span>'};
+  return m[t]||`<span class="tag tag-gray">${t||'—'}</span>`;
+}
+
+// ── Перемикання вкладок логін/реєстрація ──────────────────
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-register').classList.toggle('active', !isLogin);
+  document.getElementById('form-login').style.display    = isLogin ? 'block' : 'none';
+  document.getElementById('form-register').style.display = isLogin ? 'none'  : 'block';
+  document.getElementById('modal-title').textContent = isLogin ? 'Вітаємо 👋' : 'Реєстрація';
+  document.getElementById('modal-sub').textContent   = isLogin ? 'Увійдіть до особистого кабінету' : 'Створіть новий акаунт';
+}
+
+// ── Оновити хедер залежно від стану авторизації ────────────
+function updateHeaderAuth() {
+  const loggedIn = !!accessToken;
+  document.getElementById('header-auth-btns').style.display = loggedIn ? 'none'  : 'flex';
+  document.getElementById('header-user-btns').style.display = loggedIn ? 'flex'  : 'none';
+  if (loggedIn && currentUser) {
+    const parts = currentUser.name.split(' ');
+    document.getElementById('header-user-name').textContent =
+      parts[0] + (parts[1] ? ' ' + parts[1][0] + '.' : '');
+  }
+}
+
+// ── Реєстрація ──────────────────────────────────────────────
+async function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const role  = document.getElementById('reg-role').value;
+
+  if (!name || !email || !pass) return showToast('Помилка', 'Заповніть всі поля', true);
+  if (pass.length < 6) return showToast('Помилка', 'Пароль мінімум 6 символів', true);
+
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Реєстрація...';
+
+  try {
+    // Перевіряємо чи є вже юзери в системі
+    const healthData = await api('/health');
+    
+    // Якщо залогінений як директор — реєстрація через admin endpoint
+    if (accessToken && currentUser && currentUser.role === 'director') {
+      await api('/admin/users', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password: pass, role }),
+      });
+      showToast('Готово ✓', `Акаунт для ${name} створено! Дані надіслано на email.`);
+      closeModal();
+    } else {
+      // Спробуємо зареєструватись як перший юзер
+      const data = await api('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password: pass, role }),
+      });
+      accessToken  = data.accessToken;
+      currentUser  = data.user;
+      localStorage.setItem('ds_token', accessToken);
+      localStorage.setItem('ds_user', JSON.stringify(currentUser));
+      closeModal();
+      updateHeaderAuth();
+      showPage('dashboard-page', null);
+      showToast('Ласкаво просимо ✓', `Акаунт створено: ${currentUser.name}`);
+    }
+  } catch (err) {
+    showToast('Помилка реєстрації', err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Зареєструватись';
+  }
+}
+
+
+// ── Orders (Замовлення з сайту) ──────────────────────────
+async function loadOrders() {
+  try {
+    const { orders } = await api('/orders');
+    // Показуємо тільки активні (не converted, не rejected)
+    const active = orders.filter(o => o.status !== 'converted' && o.status !== 'rejected');
+    const newCount = orders.filter(o => o.status === 'new').length;
+
+    const sbOrders = document.getElementById('sb-orders');
+    if (sbOrders) sbOrders.textContent = newCount || '';
+
+    const subEl = document.getElementById('orders-sub');
+    if (subEl) subEl.textContent = active.length + ' активних · ' + newCount + ' нових';
+
+    const statusLabels = { new: 'Нова', contacted: 'Зв\'язались', converted: 'Конвертовано', rejected: 'Відхилено' };
+    const statusColors = { new: 'tag-gold', contacted: 'tag-purple', converted: 'tag-green', rejected: 'tag-gray' };
+
+    const listEl = document.getElementById('orders-list');
+    if (!listEl) return;
+
+    if (active.length === 0) {
+      listEl.innerHTML = '<div style="padding:3rem;text-align:center;color:var(--text-dim)">📭 Нових заявок немає</div>';
+      return;
+    }
+
+    listEl.innerHTML = active.map(o => `
+      <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:1.5rem;align-items:flex-start" id="order-${o._id}">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;flex-wrap:wrap">
+            <span style="font-weight:600;font-size:.95rem">${o.name}</span>
+            <span class="tag ${statusColors[o.status] || 'tag-gray'}" style="font-size:.65rem">${statusLabels[o.status] || o.status}</span>
+            <span style="font-size:.7rem;color:var(--text-dim);margin-left:auto">${new Date(o.createdAt).toLocaleString('uk-UA')}</span>
+          </div>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.35rem">
+            📧 <a href="mailto:${o.email}" style="color:var(--gold);text-decoration:none">${o.email}</a>
+            ${o.company ? ' &nbsp;·&nbsp; 🏢 ' + o.company : ''}
+          </div>
+          <div style="font-size:.82rem;color:var(--gold-light);margin-bottom:.5rem">🎯 ${o.serviceType}${o.budget ? ' &nbsp;·&nbsp; 💰 ' + o.budget : ''}</div>
+          <div style="font-size:.82rem;color:var(--text-muted);line-height:1.65;background:var(--surface);padding:.75rem;border-radius:8px;border:1px solid var(--border)">${o.description}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;min-width:110px">
+          <button onclick="convertOrderToProject('${o._id}', '${o.name.replace(/'/g, '\\&apos;')}', '${o.email}', '${(o.company||'').replace(/'/g, '\\&apos;')}', '${o.serviceType.replace(/'/g, '\\&apos;')}')"
+            style="background:var(--gold);color:var(--void);border:none;padding:.55rem .9rem;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;width:100%;transition:all .2s"
+            onmouseover="this.style.background='var(--gold-light)'" onmouseout="this.style.background='var(--gold)'">
+            ✦ В проєкт
+          </button>
+          <button onclick="updateOrderStatus('${o._id}', 'contacted'); this.textContent='✓ Зв\'язались'; this.disabled=true"
+            style="background:none;color:var(--accent);border:1px solid var(--accent);padding:.45rem .7rem;border-radius:8px;font-size:.72rem;cursor:pointer;width:100%">
+            📞 Зв'язались
+          </button>
+          <button onclick="if(confirm('Відхилити заявку від ${o.name}?')) updateOrderStatus('${o._id}', 'rejected')"
+            style="background:none;color:var(--text-dim);border:1px solid var(--border);padding:.45rem .7rem;border-radius:8px;font-size:.72rem;cursor:pointer;width:100%">
+            ✕ Відхилити
+          </button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    const listEl = document.getElementById('orders-list');
+    if (listEl) listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--accent2)">❌ ' + e.message + '</div>';
+  }
+}
+
+async function updateOrderStatus(id, status) {
+  try {
+    await api('/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+    const labels = { contacted: 'Статус оновлено — зв\'язались', rejected: 'Заявку відхилено' };
+    showToast('✓', labels[status] || 'Оновлено');
+    setTimeout(() => loadOrders(), 500);
+  } catch(e) { showToast('Помилка', e.message, true); }
+}
+
+async function convertOrderToProject(orderId, clientName, clientEmail, company, serviceType) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Створення...';
+
+  try {
+    // 1. Перевіряємо чи клієнт вже існує
+    let clientId = null;
+    try {
+      const search = await api('/clients?search=' + encodeURIComponent(clientEmail));
+      if (search.clients && search.clients.length > 0) {
+        clientId = search.clients[0]._id;
+        console.log('Клієнт вже існує:', clientId);
+      }
+    } catch(e) {}
+
+    // 2. Якщо немає — створюємо
+    if (!clientId) {
+      const companyName = company || clientName;
+      const cd = await api('/clients', {
+        method: 'POST',
+        body: JSON.stringify({
+          companyName,
+          contactName: clientName,
+          email: clientEmail,
+          status: 'potential',
+          notes: 'Конвертовано із заявки. Послуга: ' + serviceType,
+        })
+      });
+      clientId = cd.client._id;
+    }
+
+    // 3. Генеруємо унікальний projectId
+    const projRes = await api('/projects');
+    const maxNum = projRes.projects.reduce((max, p) => {
+      const num = parseInt((p.projectId || '#000').replace('#',''));
+      return num > max ? num : max;
+    }, 0);
+    const projectId = '#' + String(maxNum + 1).padStart(3, '0');
+
+    // 4. Deadline — через 2 місяці
+    const deadline = new Date();
+    deadline.setMonth(deadline.getMonth() + 2);
+
+    // 5. Створюємо проєкт
+    const companyName = company || clientName;
+    await api('/projects', {
+      method: 'POST',
+      body: JSON.stringify({
+        projectId,
+        title: serviceType + ' — ' + companyName,
+        client: clientId,
+        status: 'new',
+        progress: 0,
+        budget: 0,
+        deadline: deadline.toISOString(),
+        description: 'Створено із заявки. Клієнт: ' + clientName + ' <' + clientEmail + '>',
+        tags: [serviceType],
+      })
+    });
+
+    // 6. Оновлюємо статус замовлення
+    await api('/orders/' + orderId, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'converted' })
+    });
+
+    showToast('✅ Проєкт ' + projectId + ' створено!', 'Клієнт і проєкт додано в систему');
+    loadOrders();
+
+    // Через 2 секунди переходимо до проєктів
+    setTimeout(() => {
+      showDash('dash-projects', null);
+      document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    }, 2000);
+
+  } catch(e) {
+    console.error('convertOrderToProject error:', e);
+    showToast('Помилка', e.message || 'Щось пішло не так', true);
+    btn.disabled = false;
+    btn.textContent = '✦ В проєкт';
+  }
+}
+
+</script>
+</body>
+</html>
