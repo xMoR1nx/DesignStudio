@@ -662,12 +662,33 @@ app.post('/api/orders', async (req, res) => {
 
 app.patch('/api/orders/:id', auth, requireRole('director','manager'), async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.id, 
-      { status: req.body.status }, 
-      { new: true }
-    );
+    // Знаходимо замовлення, щоб отримати його поточний стан
+    const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'Заявку не знайдено' });
+
+    const oldStatus = order.status;
+    order.status = req.body.status;
+    await order.save();
+
+    // Якщо заявку відхилено – надіслати email клієнту
+    if (order.status === 'rejected' && oldStatus !== 'rejected') {
+      const clientHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0c;color:#e8e4dc;padding:32px;border-radius:12px">
+          <h1 style="color:#c9a84c;text-align:center">DesignStudio Manager</h1>
+          <div style="background:#1c1c26;border:1px solid #2a2a3a;border-radius:10px;padding:24px;margin:20px 0">
+            <h2 style="color:#e8e4dc;margin:0 0 12px">Шановний(а) ${order.name},</h2>
+            <p style="color:#aaa;line-height:1.7">Дякуємо за ваш інтерес. На жаль, ми не можемо прийняти вашу заявку на послугу <strong style="color:#c9a84c">${order.serviceType}</strong> наразі.</p>
+            <p style="color:#aaa">Якщо у вас є додаткові запитання, зв'яжіться з нами: <a href="mailto:hello@designstudio.ua" style="color:#c9a84c">hello@designstudio.ua</a></p>
+          </div>
+          <p style="color:#555;font-size:12px;text-align:center">DesignStudio Manager · Козак М.В. · ПП-32</p>
+        </div>`;
+      await sendEmail({
+        to: order.email,
+        subject: '✦ Вашу заявку відхилено — DesignStudio Manager',
+        html: clientHtml,
+      });
+    }
+
     res.json({ message: 'Оновлено', order });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
