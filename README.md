@@ -1,140 +1,184 @@
-# DesignStudio Manager — Backend API Server
-**Козак М.В. · ПП-32 · Львівська політехніка**  
-Курс: «Проектування та розробка інформаційних систем»
+# DesignStudio Manager
+
+**Інформаційна система управління дизайн-студією**  
+_Курсова робота з дисципліни «Проектування та розробка інформаційних систем»_  
+**Автор: Козак М.В. • ПП-32 • Національний університет «Львівська політехніка»**
+
+[![Live Demo](https://img.shields.io/badge/🚀_Демо-Render-46a2f1?style=flat-square)](https://designstudio-7x2v.onrender.com)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-18%2B-brightgreen?style=flat-square&logo=node.js)](https://nodejs.org)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6%2B-4ea94b?style=flat-square&logo=mongodb)](https://www.mongodb.com/atlas)
+[![Docker](https://img.shields.io/badge/Docker-✔-2496ed?style=flat-square&logo=docker)](https://www.docker.com/)
 
 ---
 
-## Стек технологій
+## 📖 Опис
 
-| Рівень | Технологія |
-|--------|-----------|
-| Runtime | Node.js 18+ |
-| Framework | Express.js 4.18 |
-| База даних | MongoDB 6+ (Mongoose ODM) |
-| Авторизація | JWT (jsonwebtoken + bcryptjs) |
-| Frontend | Vanilla JS SPA (index.html) |
+**DesignStudio Manager** — повноцінна веб-система для автоматизації роботи дизайн-студії. Включає **CRM для клієнтів**, **Kanban-дошку для задач**, **фінансовий облік** (рахунки, платежі, аналітика), **файловий реєстр** та **публічний сайт** із формою замовлення. Реалізовано рівні доступу (RBAC), JWT-авторизацію, email-сповіщення через Gmail та адаптивний dark-інтерфейс українською мовою.
 
 ---
 
-## Структура проєкту
+## 🚀 Демо
 
-```
+**🌍 Публічний доступ:** [https://designstudio-7x2v.onrender.com](https://designstudio-7x2v.onrender.com)
+
+**Демо-логін (роль Director):**  
+- Email: `kozakmarian06@gmail.com`  
+- Пароль: `admin123`
+
+> Після входу можна оглянути всі модулі системи (Dashboard, Проєкти, Задачі, Клієнти, Фінанси тощо).
+
+---
+
+## 🧰 Стек технологій
+
+| Категорія | Інструменти |
+|-----------|--------------|
+| **Backend** | Node.js 18+, Express.js 4.18, Mongoose ODM |
+| **База даних** | MongoDB 6+ (MongoDB Atlas) |
+| **Авторизація** | JSON Web Token (JWT), bcryptjs, refresh token rotation |
+| **Email** | Nodemailer + Gmail SMTP (HTML-листи) |
+| **Frontend** | HTML5, CSS3 (Flexbox, Grid, Custom Properties), Vanilla JavaScript SPA |
+| **Тестування** | Jest 29 (24 юніт-тести) |
+| **Контейнеризація** | Docker, Docker Compose |
+| **Деплой** | Render (Docker Web Service) |
+| **Моніторинг** | Health check endpoint `/api/health` |
+
+---
+
+## 📁 Структура проєкту
 DesignStudio/
-├── server-all.js        # Головний файл бекенду (моделі, роути та логіка в одному файлі)
-├── seed.js              # Скрипт для наповнення БД тестовими даними
-├── .env                 # Змінні середовища 
-├── package.json         # Залежності та скрипти
-└── designstudio.html    # Frontend сторінка (клієнтська частина)
-```
+├── server-all.js # Основний бекенд-файл (моделі, роути, middleware)
+├── designstudio.html # Повний фронтенд (SPA – всі сторінки)
+├── designstudio.test.js # Юніт-тести (Jest)
+├── Dockerfile # Інструкція для збірки Docker-образу
+├── docker-compose.yml # Конфігурація для локального Docker-запуску
+├── package.json # Залежності та скрипти
+├── .gitignore
+├── .env.example # Приклад змінних оточення
+└── README.md # Цей файл
+
 
 ---
 
-## Встановлення та запуск
+## 🔧 Встановлення та локальний запуск
 
-## Запуск через Docker (Для перевірки)
-
-Проєкт повністю налаштований для запуску через Docker. Вам не потрібно встановлювати Node.js або MongoDB локально.
-
-### 1. Запуск проєкту
-Відкрийте термінал у папці проєкту та виконайте:
-\`\`\`bash
-docker-compose up --build -d
-\`\`\`
-Після цього сервер буде доступний за адресою: http://localhost:3000
-
-### 2. Наповнення бази тестовими даними (Seed)
-Щоб створити демо-користувачів та тестові дані, виконайте команду:
-\`\`\`bash
-docker-compose exec app node seed.js
-\`\`\`
-
-### 3. Зупинка проєкту
-\`\`\`bash
-docker-compose down
-\`\`\`
-
-## API Endpoints
-
-### Авторизація
-| Метод | URL | Опис |
-|-------|-----|------|
-| POST | `/api/auth/login` | Вхід (повертає JWT) |
-| POST | `/api/auth/logout` | Вихід |
-| POST | `/api/auth/refresh` | Оновити токен |
-| GET | `/api/auth/me` | Поточний користувач |
-
-### Клієнти
-| Метод | URL | Роль |
-|-------|-----|------|
-| GET | `/api/clients` | всі |
-| POST | `/api/clients` | director, manager |
-| GET | `/api/clients/:id` | всі |
-| PATCH | `/api/clients/:id` | director, manager |
-| DELETE | `/api/clients/:id` | director |
-
-### Проєкти
-| Метод | URL | Опис |
-|-------|-----|------|
-| GET | `/api/projects` | список (фільтр: status, client) |
-| POST | `/api/projects` | створити |
-| GET | `/api/projects/:id` | деталі |
-| PATCH | `/api/projects/:id` | оновити |
-| DELETE | `/api/projects/:id` | видалити |
-| GET | `/api/projects/:id/tasks` | задачі проєкту (Kanban) |
-
-### Задачі, Фінанси, Файли
-| GET/POST/PATCH | `/api/tasks` | Kanban-задачі |
-| GET/POST/PATCH | `/api/invoices` | рахунки-фактури |
-| POST | `/api/payments` | підтвердити оплату |
-| GET | `/api/files` | файловий реєстр |
-| POST | `/api/orders` | **публічна** форма замовлення |
-| GET | `/api/notifications/:userId` | сповіщення |
-| GET | `/api/admin/stats` | статистика (director) |
-| GET | `/api/health` | health check |
-
----
-
-## Demo-авторизація
-
-```
-Email:  olena.bondarenko@designstudio.com
-Пароль: admin123
-Роль:   director (повний доступ)
-```
-
----
-
-## Приклад запиту (curl)
+### 📦 Через Docker (рекомендовано)
 
 ```bash
-# Логін
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"olena.bondarenko@designstudio.com","password":"admin123"}'
+# 1. Клонуйте репозиторій
+git clone https://github.com/xMoR1nx/DesignStudio.git
+cd DesignStudio
 
-# Список проєктів (з токеном)
-curl http://localhost:3000/api/projects \
-  -H "Authorization: Bearer <ваш_токен>"
+# 2. Запустіть MongoDB та сервер
+docker-compose up --build -d
 
-# Публічна форма замовлення (без токену)
-curl -X POST http://localhost:3000/api/orders \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Іван","email":"ivan@test.com","serviceType":"Брендинг та айдентика","description":"Потрібен логотип"}'
-```
+# 3. Наповніть базу тестовими даними
+docker-compose exec app node seed.js
+Сервер буде доступний за адресою http://localhost:3000
 
----
+🖥️ Локально без Docker (потрібен Node.js та MongoDB)
+bash
+npm install
+# налаштуйте MONGO_URI та JWT_SECRET у .env
+npm start
+🌐 API Endpoints
+🔐 Авторизація
+Метод	URL	Опис
+POST	/api/auth/login	Отримати JWT
+POST	/api/auth/logout	Вихід
+POST	/api/auth/refresh	Оновити токен
+GET	/api/auth/me	Дані поточного користувача
+👥 Клієнти (CRM)
+Метод	URL	Права доступу
+GET	/api/clients	будь-яка роль
+POST	/api/clients	director, manager
+GET	/api/clients/:id	будь-яка
+PATCH	/api/clients/:id	director, manager
+DELETE	/api/clients/:id	director
+📂 Проєкти
+GET /api/projects – список (з фільтрами),
+POST /api/projects – створити,
+GET /api/projects/:id – деталі,
+PATCH /api/projects/:id – оновити,
+DELETE /api/projects/:id – видалити,
+GET /api/projects/:id/tasks – Kanban-задачі проєкту.
 
-## Моделі MongoDB
+✅ Задачі (Kanban)
+GET /api/tasks – всі задачі (фільтри: status, priority, assignee),
+POST /api/tasks – створити,
+PATCH /api/tasks/:id – змінити статус / виконавця,
+DELETE /api/tasks/:id – видалити.
 
-| Колекція | Опис |
-|----------|------|
-| `users` | Користувачі системи (director / manager / designer) |
-| `clients` | CRM — клієнти студії |
-| `projects` | Проєкти з прогресом, бюджетом, дедлайном |
-| `tasks` | Kanban-задачі з коментарями |
-| `files` | Файловий реєстр проєктів |
-| `invoices` | Рахунки-фактури |
-| `payments` | Підтверджені оплати |
-| `notifications` | Push-сповіщення для юзерів |
-| `orders` | Заявки з публічної форми сайту |
-| `refreshtokens` | JWT refresh token rotation |
+💰 Фінанси
+GET /api/invoices – рахунки + аналітика,
+POST /api/invoices – виставити рахунок,
+PATCH /api/invoices/:id – оновити статус,
+POST /api/payments – підтвердити оплату.
+
+🗂️ Файли
+GET /api/files – файловий реєстр (з фільтром за проєктом),
+POST /api/files – зареєструвати файл.
+
+📬 Замовлення (публічні)
+POST /api/orders – заявка з сайту (без авторизації),
+GET /api/orders – список заявок (director/manager),
+PATCH /api/orders/:id – зміна статусу.
+
+🔔 Сповіщення
+GET /api/notifications/:userId – сповіщення користувача,
+PATCH /api/notifications/:id/read – позначити прочитаним.
+
+📊 Адміністрування (тільки director)
+GET /api/admin/stats – загальна статистика,
+GET /api/admin/users – список користувачів,
+POST /api/admin/users – створити нового користувача.
+
+🫀 Health check
+GET /api/health – статус сервера та БД.
+
+🗃️ Моделі MongoDB (Mongoose)
+Колекція	Призначення
+users	Користувачі системи (4 ролі)
+clients	CRM-клієнти
+projects	Проєкти (статус, бюджет, прогрес)
+tasks	Kanban-задачі з коментарями
+invoices	Рахунки-фактури
+payments	Підтверджені оплати
+files	Реєстр файлів проєктів
+notifications	Внутрішні сповіщення
+orders	Заявки з публічної форми
+refreshtokens	Refresh-токени для безпечного оновлення JWT
+
+🧪 Тестування
+Проєкт містить 24 юніт-тести (Jest), які покривають:
+JWT-авторизацію
+Хешування паролів (bcrypt)
+Валідацію форм замовлень
+Фінансову аналітику
+Генерацію ID проєктів
+Допоміжні функції форматування
+
+bash
+npm test
+Результат: 24 passed, 24 total ✅
+
+📧 Email-сповіщення
+Система автоматично надсилає HTML-листи через Gmail SMTP:
+Адміністратору – при надходженні нової заявки (деталі + посилання на кабінет)
+Клієнту – підтвердження отримання заявки
+Новому користувачу – дані для входу
+Налаштування пошти виконується через змінні оточення EMAIL_USER та EMAIL_PASS (пароль додатку Gmail).
+
+🚢 Деплой
+Система розгорнута на платформі Render як Docker Web Service.
+База даних: MongoDB Atlas (хмарний кластер)
+Автоматичний деплой: з гілки main репозиторію GitHub
+Для розгортання власного екземпляра достатньо:
+Форкнути репозиторій
+Підключити його до Render (або іншої Docker-сумісної платформи)
+Вказати змінні оточення: MONGO_URI, JWT_SECRET, EMAIL_USER, EMAIL_PASS, BASE_URL
+
+📝 Ліцензія
+Цей проєкт створено виключно в навчальних цілях.
+© 2026 Козак М.В., Національний університет «Львівська політехніка».
