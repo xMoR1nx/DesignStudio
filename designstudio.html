@@ -638,6 +638,9 @@ footer { background: var(--deep); border-top: 1px solid var(--border); padding: 
       <!-- CLIENTS -->
       <div class="dash-subpage" id="dash-clients">
         <div class="dash-header"><div class="dash-title">Клієнти</div><div class="dash-sub" id="clients-sub">CRM-модуль</div></div>
+        <div style="margin-bottom:1rem">
+       <button class="btn-primary" onclick="document.getElementById('add-client-modal').classList.add('open')">+ Додати клієнта</button>
+      </div>
         <div class="panel"><table>
           <thead><tr><th>Клієнт</th><th>Контакт</th><th>Статус</th><th>Проєктів</th><th>Сума оплат</th><th>Менеджер</th></tr></thead>
           <tbody id="clients-tbody"><tr class="loading-row"><td colspan="6"><span class="loader"></span> Завантаження з MongoDB...</td></tr></tbody>
@@ -740,7 +743,39 @@ footer { background: var(--deep); border-top: 1px solid var(--border); padding: 
 
 <div class="toast" id="toast"><div class="toast-title" id="toast-title"></div><div class="toast-msg" id="toast-msg"></div></div>
 
+<!-- Модальне вікно для додавання клієнта -->
+<div class="modal-overlay" id="add-client-modal" onclick="closeClientModalOutside(event)">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeClientModal()">✕</button>
+    <div class="modal-title">Новий клієнт</div>
+    <div class="modal-sub">Заповніть інформацію про клієнта</div>
+    <div class="form-group">
+      <label class="form-label">Компанія *</label>
+      <input class="form-input" id="new-client-company" placeholder="Назва компанії">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Контактна особа *</label>
+      <input class="form-input" id="new-client-contact" placeholder="Ім'я Прізвище">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email *</label>
+      <input class="form-input" id="new-client-email" type="email" placeholder="email@company.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Статус</label>
+      <select class="form-select" id="new-client-status">
+        <option value="potential">Потенційний</option>
+        <option value="active">Активний</option>
+        <option value="inactive">Неактивний</option>
+      </select>
+    </div>
+    <button class="form-submit" onclick="createClient()">Створити клієнта</button>
+  </div>
+</div>
+
 <script>
+
+  
 // ================================================================
 // API CONFIG
 // ================================================================
@@ -796,6 +831,7 @@ function showPage(pageId, btn) {
   document.getElementById('main-footer').style.display = pageId === 'dashboard-page' ? 'none' : 'block';
   window.scrollTo(0, 0);
   if (pageId === 'dashboard-page') loadDashboard();
+  if (pageId === 'home') loadHeroStats();
 }
 
 function showDash(subId, btn) {
@@ -976,8 +1012,8 @@ async function loadProjects() {
 async function loadTasks() {
   try {
     const { tasks, grouped } = await api('/tasks?assignee=all');
-    const renderCol = (tasks, extraStyle='') => tasks.map(t => `
-      <div class="task-card" style="${extraStyle}">
+    const renderCol = (tasks, extraStyle='', nextStatus='') => tasks.map(t => `
+      <div class="task-card" style="${extraStyle}" ${nextStatus ? `onclick="moveTask('${t._id}', '${nextStatus}')"` : ''}>
         <div class="task-title">${t.title}</div>
         <div class="task-meta">
           <span class="task-project">${t.project?.title || ''}</span>
@@ -992,8 +1028,8 @@ async function loadTasks() {
     const inprog  = allTasks.filter(t=>t.status==='in_progress');
     const done    = allTasks.filter(t=>t.status==='done');
 
-    document.getElementById('col-todo').innerHTML   = renderCol(todo)   || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
-    document.getElementById('col-inprog').innerHTML = renderCol(inprog,'border-color:rgba(123,108,255,.3)') || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
+    document.getElementById('col-todo').innerHTML   = renderCol(todo, '', 'in_progress')   || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
+    document.getElementById('col-inprog').innerHTML = renderCol(inprog,'border-color:rgba(123,108,255,.3)', 'done') || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
     document.getElementById('col-done').innerHTML   = renderCol(done).replace(/class="task-card"/g,'class="task-card" style="opacity:.65"') || '<div style="color:var(--text-dim);padding:1rem;font-size:.82rem">Порожньо</div>';
     document.getElementById('todo-count').textContent   = todo.length;
     document.getElementById('inprog-count').textContent = inprog.length;
@@ -1149,7 +1185,7 @@ function filterPortfolio(cat, btn) {
   });
 }
 
-// ── Finance chart ────────────────────────────────────────────────
+// Демонстраційні дані – замінено на статичні для курсової роботи
 function buildChart() {
   const months  = ['Жов','Лис','Гру','Січ','Лют','Бер'];
   const income  = [32,45,78,42,55,87];
@@ -1348,7 +1384,7 @@ async function updateOrderStatus(id, status) {
 }
 
 async function convertOrderToProject(orderId, clientName, clientEmail, company, serviceType) {
-  const btn = event.target;
+  const btn = event.currentTarget;
   btn.disabled = true;
   btn.textContent = '⏳ Створення...';
 
@@ -1430,7 +1466,57 @@ async function convertOrderToProject(orderId, clientName, clientEmail, company, 
     btn.textContent = '✦ В проєкт';
   }
 }
+async function moveTask(id, newStatus) {
+  try {
+    await api(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
+    loadTasks(); // перезавантажити Kanban
+  } catch(e) {
+    showToast('Помилка', e.message, true);
+  }
+}
 
+async function loadHeroStats() {
+  try {
+    const stats = await fetch(API_BASE + '/stats/public').then(r => r.json());
+    // Очікуємо структуру { projects, clients, experience }
+    const statNums = document.querySelectorAll('.stat-num');
+    if (statNums.length >= 3) {
+      statNums[0].textContent = stats.projects + '+';
+      statNums[1].textContent = stats.clients;
+      statNums[2].textContent = stats.experience;
+    }
+  } catch (e) { /* ігноруємо, якщо API недоступне */ }
+}
+
+function closeClientModal() {
+  document.getElementById('add-client-modal').classList.remove('open');
+}
+function closeClientModalOutside(e) {
+  if (e.target === document.getElementById('add-client-modal')) closeClientModal();
+}
+async function createClient() {
+  const company = document.getElementById('new-client-company').value.trim();
+  const contact = document.getElementById('new-client-contact').value.trim();
+  const email   = document.getElementById('new-client-email').value.trim();
+  const status  = document.getElementById('new-client-status').value;
+  if (!company || !contact || !email) {
+    return showToast('Помилка', "Заповніть обов'язкові поля", true);
+  }
+  try {
+    await api('/clients', {
+      method: 'POST',
+      body: JSON.stringify({ companyName: company, contactName: contact, email, status })
+    });
+    closeClientModal();
+    showToast('Готово', 'Клієнта додано');
+    if (typeof loadClients === 'function') loadClients(); // оновити таблицю
+    // Очистити поля
+    document.getElementById('new-client-company').value = '';
+    // ... аналогічно інші
+  } catch(e) {
+    showToast('Помилка', e.message, true);
+  }
+}
 </script>
 </body>
 </html>

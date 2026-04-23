@@ -11,7 +11,7 @@ const path       = require('path');
 const nodemailer = require('nodemailer');
 
 const app  = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET  = 'designstudio_secret_2026';
 const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/designstudio';
 
@@ -751,6 +751,15 @@ app.patch('/api/admin/users/:id', auth, requireRole('director'), async (req, res
 // ══════════════════════════════════════════════════════════
 // HEALTH CHECK
 // ══════════════════════════════════════════════════════════
+app.get('/api/stats/public', async (req, res) => {
+  try {
+    const projects = await Project.countDocuments();
+    const clients = await Client.countDocuments();
+    res.json({ projects, clients, experience: 4 });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
