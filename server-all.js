@@ -22,7 +22,10 @@ const NOTIFY_TO  = 'kozakmarian06@gmail.com';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  auth: { user: GMAIL_USER, pass: GMAIL_PASS },
+  auth: {
+    user: process.env.EMAIL_USER,  // kozakmarian06@gmail.com
+    pass: process.env.EMAIL_PASS,  // 16-символьний код
+  },
 });
 
 transporter.verify((err) => {
