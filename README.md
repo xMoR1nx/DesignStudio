@@ -19,79 +19,39 @@
 ## Структура проєкту
 
 ```
-designstudio-server/
-├── server.js              # Головний файл — запуск сервера
-├── seed.js                # Наповнення БД тестовими даними
-├── .env                   # Змінні середовища
-├── package.json
-├── models/
-│   └── index.js           # 10 Mongoose-схем (User, Client, Project, ...)
-├── middleware/
-│   └── index.js           # auth (JWT), requireRole, errorHandler, logger
-├── routes/
-│   ├── auth.js            # POST /login, /logout, /refresh · GET /me
-│   ├── clients.js         # CRUD клієнтів
-│   ├── projects.js        # CRUD проєктів + GET /tasks проєкту
-│   ├── tasks.js           # CRUD задач + коментарі
-│   ├── invoices.js        # CRUD рахунків-фактур
-│   ├── payments.js        # Підтвердження оплат
-│   ├── notifications.js   # Сповіщення + позначити прочитаним
-│   ├── files.js           # Файловий реєстр
-│   ├── orders.js          # Публічна форма замовлення
-│   └── admin.js           # Статистика, управління юзерами
-└── public/
-    └── index.html         # Frontend SPA (з реальними fetch()-запитами)
+DesignStudio/
+├── server-all.js        # Головний файл бекенду (моделі, роути та логіка в одному файлі)
+├── seed.js              # Скрипт для наповнення БД тестовими даними
+├── .env                 # Змінні середовища 
+├── package.json         # Залежності та скрипти
+└── designstudio.html    # Frontend сторінка (клієнтська частина)
 ```
 
 ---
 
 ## Встановлення та запуск
 
-### 1. Встановити залежності
-```bash
-cd designstudio-server
-npm install
-```
+## Запуск через Docker (Для перевірки)
 
-### 2. Запустити MongoDB
-```bash
-# macOS / Linux
-mongod --dbpath ./data
+Проєкт повністю налаштований для запуску через Docker. Вам не потрібно встановлювати Node.js або MongoDB локально.
 
-# або якщо MongoDB встановлено як сервіс
-sudo systemctl start mongod     # Linux
-brew services start mongodb-community  # macOS
-```
+### 1. Запуск проєкту
+Відкрийте термінал у папці проєкту та виконайте:
+\`\`\`bash
+docker-compose up --build -d
+\`\`\`
+Після цього сервер буде доступний за адресою: http://localhost:3000
 
-### 3. Наповнити базу тестовими даними
-```bash
-node seed.js
-```
-Виведе:
-```
-✅ Seed виконано успішно!
-🔑 Demo-акаунти (пароль: admin123):
-   olena.bondarenko@designstudio.com  — director
-   dmytro.savchenko@designstudio.com  — manager
-   yuliia.koval@designstudio.com      — designer
-   andriy.lytvyn@designstudio.com     — designer
-```
+### 2. Наповнення бази тестовими даними (Seed)
+Щоб створити демо-користувачів та тестові дані, виконайте команду:
+\`\`\`bash
+docker-compose exec app node seed.js
+\`\`\`
 
-### 4. Запустити сервер
-```bash
-# Продакшен
-npm start
-
-# Або з автоперезавантаженням (для розробки)
-npm run dev
-```
-
-### 5. Відкрити в браузері
-```
-http://localhost:3000
-```
-
----
+### 3. Зупинка проєкту
+\`\`\`bash
+docker-compose down
+\`\`\`
 
 ## API Endpoints
 
