@@ -18,6 +18,7 @@ const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/designst
 // ── Email конфіг (Gmail) ──────────────────────────────────
 const GMAIL_USER = 'kozakmarian06@gmail.com';
 const GMAIL_PASS = 'etjqhskqibjjhago';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const NOTIFY_TO  = 'kozakmarian06@gmail.com';
 
 const transporter = nodemailer.createTransport({
@@ -301,7 +302,7 @@ app.post('/api/auth/register', async (req, res) => {
         '<p style="color:#aaa">Роль: <strong style="color:#c9a84c">' + finalRole + '</strong></p>' +
         '</div>' +
         '<div style="text-align:center;margin-top:24px">' +
-        '<a href="http://localhost:3000" style="background:#c9a84c;color:#0a0a0c;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">Увійти до кабінету →</a>' +
+        '<a href="${BASE_URL}" style="background:#c9a84c;color:#0a0a0c;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">Увійти до кабінету →</a>' +
         '</div></div>'
     });
 
@@ -615,7 +616,7 @@ app.post('/api/orders', async (req, res) => {
           </table>
         </div>
         <div style="text-align:center">
-          <a href="http://localhost:3000" style="display:inline-block;background:#c9a84c;color:#0a0a0c;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">Відкрити кабінет →</a>
+          <a href="${BASE_URL}" style="display:inline-block;background:#c9a84c;color:#0a0a0c;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">Відкрити кабінет →</a>
         </div>
         <p style="text-align:center;color:#555;font-size:12px;margin-top:20px">DesignStudio Manager · Козак М.В. · ПП-32</p>
       </div>`;
@@ -729,7 +730,7 @@ app.post('/api/admin/users', auth, requireRole('director'), async (req, res) => 
             </table>
           </div>
           <div style="text-align:center;margin-top:24px">
-            <a href="http://localhost:3000" style="display:inline-block;background:#c9a84c;color:#0a0a0c;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">Увійти до кабінету →</a>
+            <a href="${BASE_URL}" style="display:inline-block;background:#c9a84c;color:#0a0a0c;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">Увійти до кабінету →</a>
           </div>
           <p style="text-align:center;color:#555;font-size:12px;margin-top:16px">Збережіть ці дані для входу в систему.</p>
         </div>`
