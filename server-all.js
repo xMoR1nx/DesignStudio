@@ -13,7 +13,7 @@ const nodemailer = require('nodemailer');
 const app  = express();
 const PORT = 3000;
 const JWT_SECRET  = 'designstudio_secret_2026';
-const MONGODB_URI = 'mongodb://localhost:27017/DesignStudioDB';
+const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/designstudio';
 
 // ── Email конфіг (Gmail) ──────────────────────────────────
 const GMAIL_USER = 'kozakmarian06@gmail.com';
@@ -846,17 +846,13 @@ async function seedIfEmpty() {
 // ЗАПУСК
 // ══════════════════════════════════════════════════════════
 mongoose.connect(MONGODB_URI)
-  .then(async () => {
-    await seedIfEmpty();
-    console.log('\n╔══════════════════════════════════════════╗');
-    console.log('║   DesignStudio Manager — запущено!       ║');
-    console.log('╠══════════════════════════════════════════╣');
-    console.log(`║   http://localhost:${PORT}                   ║`);
-    console.log(`║   http://localhost:${PORT}/api/health        ║`);
-    console.log('╚══════════════════════════════════════════╝\n');
-    app.listen(PORT);
+  .then(() => {
+    console.log('✅ MongoDB підключено');
+    app.listen(PORT, () => {
+      console.log(`🚀 Сервер запущено на порті ${PORT}`);
+    });
   })
   .catch(err => {
-    console.error('❌ MongoDB помилка:', err.message);
+    console.error('❌ Помилка підключення до MongoDB:', err.message);
     process.exit(1);
   });
