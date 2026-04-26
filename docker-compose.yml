@@ -11,6 +11,8 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/designstudio
       - JWT_SECRET=super_secret_key_12345
       - PORT=3000
+      - EMAIL_USER=kozakmarian06@gmail.com
+      - EMAIL_PASS=puoqdktzbjxehdlu
     depends_on:
       - mongodb
 
