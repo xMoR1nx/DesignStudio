@@ -5,9 +5,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const {
-  User, Client, Project, Task, File, Invoice, Payment, Notification, Order, RefreshToken
-} = require('./models');
+const { User, Client, Project, Task, File, Invoice, Payment, Notification, Order, RefreshToken } = require('./models');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/DesignStudioDB';
 
